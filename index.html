@@ -41,14 +41,19 @@
       overflow-x: hidden;
     }
 
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px; }
     .app-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
     .app-sub { font-size: 11px; color: var(--mint); font-weight: 600; margin-top: 2px; letter-spacing: 0.3px; }
+    .top-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
     .pill-btn {
       background: var(--card); color: var(--mint); border: 1px solid var(--border);
-      border-radius: 20px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+      border-radius: 20px; padding: 6px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
     }
     .pill-btn:active { background: var(--elevated); }
+    .lang-btn {
+      background: var(--mint-dim); color: var(--mint); border: 1px solid var(--mint-border);
+      border-radius: 20px; padding: 6px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+    }
 
     .view { display: none; animation: fadeIn 0.15s ease; }
     .view.active { display: block; }
@@ -60,17 +65,17 @@
     }
 
     .fest-banner {
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
       background: linear-gradient(135deg, #1A2421 0%, #1C1C1F 100%);
       border: 1px solid var(--mint-border); border-radius: 16px;
       padding: 12px 14px; margin-bottom: 12px; cursor: pointer;
     }
-    .fest-kicker { font-size: 10px; font-weight: 700; color: var(--mint); letter-spacing: 0.8px; text-transform: uppercase; }
+    .fest-kicker { font-size: 10px; font-weight: 700; color: var(--mint); letter-spacing: 0.6px; text-transform: uppercase; }
     .fest-name { font-size: 16px; font-weight: 700; margin: 2px 0; }
     .fest-date { font-size: 12px; color: var(--muted); }
     .days-badge {
       background: var(--mint); color: #0D1613; border-radius: 12px;
-      padding: 8px 12px; text-align: center; min-width: 68px;
+      padding: 8px 12px; text-align: center; min-width: 68px; flex-shrink: 0;
     }
     .days-badge .num { font-size: 18px; font-weight: 800; line-height: 1; }
     .days-badge .lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
@@ -132,7 +137,7 @@
       background: var(--bg); border-left: 3px solid var(--mint);
     }
     .why-title { font-size: 10px; font-weight: 700; color: var(--mint); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
-    .why-text { font-size: 12px; line-height: 1.45; color: #D8D8DF; }
+    .why-text { font-size: 12px; line-height: 1.5; color: #D8D8DF; }
 
     .hero { display: flex; align-items: center; gap: 14px; }
     .moon-box {
@@ -164,7 +169,7 @@
     }
     .finder-result {
       background: var(--bg); border: 1px solid var(--mint-border); border-radius: 12px;
-      padding: 12px; display: flex; justify-content: space-between; align-items: center;
+      padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
     }
 
     .list-item {
@@ -173,12 +178,12 @@
     }
     .list-item:last-child { border-bottom: none; padding-bottom: 0; }
     .li-name { font-size: 14px; font-weight: 600; }
-    .li-sub { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.35; }
+    .li-sub { font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
     .li-badge {
       background: var(--mint-dim); color: var(--mint); border: 1px solid var(--mint-border);
       border-radius: 10px; padding: 5px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: right;
     }
-    .note { font-size: 11px; color: var(--muted); line-height: 1.4; margin-top: 8px; }
+    .note { font-size: 11px; color: var(--muted); line-height: 1.45; margin-top: 8px; }
 
     .tabbar {
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -201,7 +206,10 @@
       <div class="app-title" id="topTitle">Hindu Calendar</div>
       <div class="app-sub" id="topSub"></div>
     </div>
-    <button class="pill-btn" onclick="goToday()">Today</button>
+    <div class="top-actions">
+      <button class="lang-btn" id="langBtn" onclick="toggleLang()">हिं</button>
+      <button class="pill-btn" id="todayBtn" onclick="goToday()">Today</button>
+    </div>
   </div>
 
   <!-- TAB 1: CALENDAR -->
@@ -231,58 +239,41 @@
 
   <!-- TAB 3: MAITHIL MUHURAT -->
   <div id="view-muhurat" class="view">
-    <div class="sec-title">Maithil Brahmin Muhurat Finder (Next 90 Days)</div>
+    <div class="sec-title" id="secMuhurat">Maithil Brahmin Muhurat Finder (Next 90 Days)</div>
     <div class="card">
-      <div class="chips" id="muhuratChips">
-        <div class="chip active" onclick="selectMuhurat('vivah', this)">Vivah</div>
-        <div class="chip" onclick="selectMuhurat('griha', this)">Griha Pravesh</div>
-        <div class="chip" onclick="selectMuhurat('vehicle', this)">Vehicle</div>
-        <div class="chip" onclick="selectMuhurat('namkaran', this)">Namkaran</div>
-        <div class="chip" onclick="selectMuhurat('business', this)">Business</div>
-      </div>
-      <div id="muhuratStatus"></div>
+      <div class="chips" id="muhuratChips"></div>
       <div id="muhuratList"></div>
-      <div class="note">Filters by Mithila Panchang rules: excludes Kharmas, Chaturmas, Pitru Paksha, Rikta Tithis, Amavasya, and approx. Guru/Shukra Asta. Cross-check final Vivah/Griha dates with a Pandit for personal Chandra/Tara Shuddhi.</div>
+      <div class="note" id="muhuratNote"></div>
     </div>
   </div>
 
   <!-- TAB 4: ASTRONOMY & EVENTS -->
   <div id="view-astro" class="view">
-    <div class="sec-title">Planet Positions (Sidereal / Lahiri)</div>
+    <div class="sec-title" id="secPlanets">Planet Positions (Sidereal / Lahiri)</div>
     <div class="card">
       <input type="date" id="astroDate" onchange="renderPlanets()" style="margin-bottom:10px;">
       <div id="planetList"></div>
     </div>
 
-    <div class="sec-title">Upcoming Transits (Gochar)</div>
+    <div class="sec-title" id="secTransits">Upcoming Transits (Gochar)</div>
     <div class="card" id="transitList"></div>
 
-    <div class="sec-title">Eclipses (Grahan) & Sutak Timings</div>
+    <div class="sec-title" id="secEclipses">Eclipses (Grahan) & Sutak Timings</div>
     <div class="card" id="eclipseList"></div>
   </div>
 
   <!-- TAB 5: COUNTDOWNS -->
   <div id="view-countdown" class="view">
-    <div class="sec-title">Days Until Any Tithi</div>
+    <div class="sec-title" id="secTithiFinder">Days Until Any Tithi</div>
     <div class="card">
-      <div class="chips" id="quickChips">
-        <div class="chip active" onclick="quickTithi('Any', 10, this)">Ekadashi</div>
-        <div class="chip" onclick="quickTithi('Shukla', 14, this)">Purnima</div>
-        <div class="chip" onclick="quickTithi('Krishna', 14, this)">Amavasya</div>
-        <div class="chip" onclick="quickTithi('Krishna', 3, this)">Sankashti</div>
-        <div class="chip" onclick="quickTithi('Any', 12, this)">Pradosh</div>
-      </div>
+      <div class="chips" id="quickChips"></div>
       <div class="select-row">
-        <select id="selPaksha" onchange="updateTithiFinder()">
-          <option value="Any">Any Paksha</option>
-          <option value="Shukla">Shukla Paksha</option>
-          <option value="Krishna">Krishna Paksha</option>
-        </select>
+        <select id="selPaksha" onchange="updateTithiFinder()"></select>
         <select id="selTithi" onchange="updateTithiFinder()"></select>
       </div>
       <div class="finder-result" id="finderResult"></div>
     </div>
-    <div class="sec-title">Upcoming Hindu Festivals</div>
+    <div class="sec-title" id="secFestList">Upcoming Hindu Festivals</div>
     <div class="card" id="festList"></div>
   </div>
 
@@ -290,93 +281,187 @@
   <div class="tabbar">
     <div class="tab active" id="tab-calendar" onclick="switchTab('calendar')">
       <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span>Calendar</span>
+      <span id="lbl-tab-calendar">Calendar</span>
     </div>
     <div class="tab" id="tab-panchang" onclick="switchTab('panchang')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
-      <span>Panchang</span>
+      <span id="lbl-tab-panchang">Panchang</span>
     </div>
     <div class="tab" id="tab-muhurat" onclick="switchTab('muhurat')">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.5 16.5 14 18 21 12 17.5 6 21 7.5 14 2 9.5 9 9 12 2"/></svg>
-      <span>Muhurat</span>
+      <span id="lbl-tab-muhurat">Muhurat</span>
     </div>
     <div class="tab" id="tab-astro" onclick="switchTab('astro')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5" transform="rotate(-25 12 12)"/></svg>
-      <span>Astro</span>
+      <span id="lbl-tab-astro">Astro</span>
     </div>
     <div class="tab" id="tab-countdown" onclick="switchTab('countdown')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
-      <span>Events</span>
+      <span id="lbl-tab-countdown">Events</span>
     </div>
   </div>
 
   <script>
-    const TITHIS = [
-      "Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami","Ashtami","Navami","Dashami",
-      "Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Purnima",
-      "Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami","Ashtami","Navami","Dashami",
-      "Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Amavasya"
-    ];
-    const TITHI_NAMES_15 = [
-      "Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami","Ashtami","Navami","Dashami",
-      "Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Purnima / Amavasya"
-    ];
-    const TITHI_SHORT = [
-      "Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chatu","Purn",
-      "Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chatu","Amav"
-    ];
-    const NAKSHATRAS = [
-      "Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya","Ashlesha","Magha",
-      "Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati","Vishakha","Anuradha","Jyeshtha","Mula",
-      "Purva Ashadha","Uttara Ashadha","Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"
-    ];
-    const YOGAS = [
-      "Vishkumbha","Priti","Ayushman","Saubhagya","Shobhana","Atiganda","Sukarma","Dhriti","Shula","Ganda",
-      "Vriddhi","Dhruva","Vyaghata","Harshana","Vajra","Siddhi","Vyatipata","Variyan","Parigha","Shiva",
-      "Siddha","Sadhya","Shubha","Shukla","Brahma","Indra","Vaidhriti"
-    ];
+    // --- Language State ---
+    let lang = localStorage.getItem("panchang_lang") || "en";
+    let currentTab = "calendar";
+    let currentMuhurat = "vivah";
+
+    const I18N = {
+      en: {
+        titles: { calendar:"Hindu Calendar", panchang:"Today's Panchang", muhurat:"Maithil Muhurat", astro:"Astronomy", countdown:"Countdowns" },
+        tabs: { calendar:"Calendar", panchang:"Panchang", muhurat:"Muhurat", astro:"Astro", countdown:"Events" },
+        today: "Today", month: "Month", vs: "Vikram Samvat", vsShort: "VS", shaka: "Shaka",
+        nextFest: "Next Hindu Festival", dayLeft: "Day Left", daysLeft: "Days Left", day: "Day", days: "Days",
+        hinduMonth: "Hindu Month", hinduYear: "Hindu Year", tithi: "Tithi", tithiStart: "Tithi Starts", tithiEnd: "Tithi Ends",
+        nakshatra: "Nakshatra", yogaKarana: "Yoga / Karana", sunRiseSet: "Sunrise / Sunset", rahuKaal: "Rahu Kaal",
+        whyMatters: "Why This Day Matters", moonPhase: "Moon Phase", lit: "Lit", yoga: "Yoga", karana: "Karana",
+        tithiSunTimings: "Tithi & Sun Timings", sunrise: "Sunrise", sunset: "Sunset",
+        muhuratKaal: "Muhurat & Kaal", abhijit: "Abhijit Muhurat", yamaganda: "Yamaganda",
+        secMuhurat: "Maithil Brahmin Muhurat Finder (Next 90 Days)",
+        muhuratNote: "Filters by Mithila Panchang rules: excludes Kharmas, Chaturmas, Pitru Paksha, Rikta Tithis, Amavasya, and approx. Guru/Shukra Asta. Cross-check final Vivah/Griha dates with a Pandit for personal Chandra/Tara Shuddhi.",
+        noMuhurat: "No strict dates in the next 90 days (likely Kharmas, Chaturmas, or Guru/Shukra Asta).",
+        secPlanets: "Planet Positions (Sidereal / Lahiri)", secTransits: "Upcoming Transits (Gochar)",
+        secEclipses: "Eclipses (Grahan) & Sutak Timings", enters: "enters", sutak: "Sutak", india: "India", outside: "Outside", vakri: "Vakri",
+        secTithiFinder: "Days Until Any Tithi", secFestList: "Upcoming Hindu Festivals",
+        anyPaksha: "Any Paksha", shukla: "Shukla", krishna: "Krishna", shuklaFull: "Shukla Paksha", krishnaFull: "Krishna Paksha",
+        dows: ["SUN","MON","TUE","WED","THU","FRI","SAT"],
+        gMonths: ["January","February","March","April","May","June","July","August","September","October","November","December"],
+        gMonthsShort: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+        gDays: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+        gDaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
+        muhuratCats: { vivah:"Vivah", griha:"Griha Pravesh", vehicle:"Vehicle", namkaran:"Namkaran", business:"Business" },
+        quickChips: ["Ekadashi","Purnima","Amavasya","Sankashti","Pradosh"]
+      },
+      hi: {
+        titles: { calendar:"हिन्दू कैलेंडर", panchang:"आज का पंचांग", muhurat:"मैथिल मुहूर्त", astro:"खगोल व ग्रह", countdown:"तिथि व पर्व" },
+        tabs: { calendar:"कैलेंडर", panchang:"पंचांग", muhurat:"मुहूर्त", astro:"ग्रह", countdown:"पर्व" },
+        today: "आज", month: "मास", vs: "विक्रम संवत", vsShort: "वि.सं.", shaka: "शक",
+        nextFest: "अगला प्रमुख पर्व", dayLeft: "दिन शेष", daysLeft: "दिन शेष", day: "दिन", days: "दिन",
+        hinduMonth: "हिन्दू मास", hinduYear: "हिन्दू वर्ष", tithi: "तिथि", tithiStart: "तिथि प्रारंभ", tithiEnd: "तिथि समाप्त",
+        nakshatra: "नक्षत्र", yogaKarana: "योग / करण", sunRiseSet: "सूर्योदय / सूर्यास्त", rahuKaal: "राहु काल",
+        whyMatters: "आज का महत्व", moonPhase: "चंद्र कला", lit: "प्रकाशित", yoga: "योग", karana: "करण",
+        tithiSunTimings: "तिथि एवं सूर्य समय", sunrise: "सूर्योदय", sunset: "सूर्यास्त",
+        muhuratKaal: "मुहूर्त एवं काल", abhijit: "अभिजित मुहूर्त", yamaganda: "यमगण्ड",
+        secMuhurat: "मैथिल ब्राह्मण मुहूर्त (अगले 90 दिन)",
+        muhuratNote: "मिथिला पंचांग के अनुसार: खरमास, चातुर्मास, पितृपक्ष, रिक्ता तिथि, अमावस्या तथा अनुमानित गुरु/शुक्र अस्त को हटाया गया है। अंतिम विवाह/गृह प्रवेश हेतु पंडित जी से चंद्र/तारा शुद्धि अवश्य जांचें।",
+        noMuhurat: "अगले 90 दिनों में कोई शुभ तिथि नहीं (संभवतः खरमास, चातुर्मास या गुरु/शुक्र अस्त)।",
+        secPlanets: "ग्रह स्थिति (निरयण / लाहिड़ी)", secTransits: "आगामी ग्रह गोचर",
+        secEclipses: "ग्रहण एवं सूतक काल", enters: "का गोचर:", sutak: "सूतक", india: "भारत में", outside: "बाहर", vakri: "वक्री",
+        secTithiFinder: "किसी भी तिथि तक शेष दिन", secFestList: "आगामी हिन्दू पर्व",
+        anyPaksha: "कोई भी पक्ष", shukla: "शुक्ल", krishna: "कृष्ण", shuklaFull: "शुक्ल पक्ष", krishnaFull: "कृष्ण पक्ष",
+        dows: ["रवि","सोम","मंगल","बुध","गुरु","शुक्र","शनि"],
+        gMonths: ["जनवरी","फ़रवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"],
+        gMonthsShort: ["जन","फ़र","मार्च","अप्रै","मई","जून","जुल","अग","सित","अक्टू","नव","दिस"],
+        gDays: ["रविवार","सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार"],
+        gDaysShort: ["रवि","सोम","मंगल","बुध","गुरु","शुक्र","शनि"],
+        muhuratCats: { vivah:"विवाह", griha:"गृह प्रवेश", vehicle:"वाहन क्रय", namkaran:"नामकरण", business:"व्यापार" },
+        quickChips: ["एकादशी","पूर्णिमा","अमावस्या","संकष्टी","प्रदोष"]
+      }
+    };
+
+    const TITHIS = {
+      en: ["Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami","Ashtami","Navami","Dashami","Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Purnima","Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami","Ashtami","Navami","Dashami","Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Amavasya"],
+      hi: ["प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा","प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"]
+    };
+    const TITHI_NAMES_15 = {
+      en: ["Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami","Ashtami","Navami","Dashami","Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Purnima / Amavasya"],
+      hi: ["प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा / अमावस्या"]
+    };
+    const TITHI_SHORT = {
+      en: ["Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chatu","Purn","Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chatu","Amav"],
+      hi: ["प्रति","द्वि","तृती","चतु","पंच","षष्ठी","सप्त","अष्ट","नव","दश","एका","द्वा","त्रयो","चतु","पूर्णि","प्रति","द्वि","तृती","चतु","पंच","षष्ठी","सप्त","अष्ट","नव","दश","एका","द्वा","त्रयो","चतु","अमा"]
+    };
+    const NAKSHATRAS = {
+      en: ["Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya","Ashlesha","Magha","Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati","Vishakha","Anuradha","Jyeshtha","Mula","Purva Ashadha","Uttara Ashadha","Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"],
+      hi: ["अश्विनी","भरणी","कृत्तिका","रोहिणी","मृगशिरा","आर्द्रा","पुनर्वसु","पुष्य","आश्लेषा","मघा","पूर्वाफाल्गुनी","उत्तराफाल्गुनी","हस्त","चित्रा","स्वाति","विशाखा","अनुराधा","ज्येष्ठा","मूल","पूर्वाषाढ़ा","उत्तराषाढ़ा","श्रवण","धनिष्ठा","शतभिषा","पूर्वाभाद्रपद","उत्तराभाद्रपद","रेवती"]
+    };
+    const YOGAS = {
+      en: ["Vishkumbha","Priti","Ayushman","Saubhagya","Shobhana","Atiganda","Sukarma","Dhriti","Shula","Ganda","Vriddhi","Dhruva","Vyaghata","Harshana","Vajra","Siddhi","Vyatipata","Variyan","Parigha","Shiva","Siddha","Sadhya","Shubha","Shukla","Brahma","Indra","Vaidhriti"],
+      hi: ["विष्कुम्भ","प्रीति","आयुष्मान","सौभाग्य","शोभन","अतिगण्ड","सुकर्मा","धृति","शूल","गण्ड","वृद्धि","ध्रुव","व्याघात","हर्षण","वज्र","सिद्धि","व्यतीपात","वरीयान","परिघ","शिव","सिद्ध","साध्य","शुभ","शुक्ल","ब्रह्म","इन्द्र","वैधृति"]
+    };
+    const KARANAS_MAP = {
+      "Bava":"बव","Balava":"बालव","Kaulava":"कौलव","Taitila":"तैतिल","Garaja":"गरज","Vanija":"वणिज","Vishti":"विष्टि (भद्रा)",
+      "Kimstughna":"किंस्तुघ्न","Shakuni":"शकुनि","Chatushpada":"चतुष्पद","Naga":"नाग"
+    };
     const KARANAS_MOV = ["Bava","Balava","Kaulava","Taitila","Garaja","Vanija","Vishti"];
-    const MASAS = ["Chaitra","Vaishakha","Jyeshtha","Ashadha","Shravana","Bhadrapada","Ashwin","Kartika","Margashirsha","Pausha","Magha","Phalguna"];
-    const VAARAS = ["Ravivara","Somavara","Mangalavara","Budhavara","Guruvara","Shukravara","Shanivara"];
-    const RASHIS = ["Mesha","Vrishabha","Mithuna","Karka","Simha","Kanya","Tula","Vrishchika","Dhanu","Makara","Kumbha","Meena"];
+    const MASAS = {
+      en: ["Chaitra","Vaishakha","Jyeshtha","Ashadha","Shravana","Bhadrapada","Ashwin","Kartika","Margashirsha","Pausha","Magha","Phalguna"],
+      hi: ["चैत्र","वैशाख","ज्येष्ठ","आषाढ़","श्रावण","भाद्रपद","आश्विन","कार्तिक","मार्गशीर्ष","पौष","माघ","फाल्गुन"]
+    };
+    const VAARAS = {
+      en: ["Ravivara","Somavara","Mangalavara","Budhavara","Guruvara","Shukravara","Shanivara"],
+      hi: ["रविवार","सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार"]
+    };
+    const RASHIS = {
+      en: ["Mesha","Vrishabha","Mithuna","Karka","Simha","Kanya","Tula","Vrishchika","Dhanu","Makara","Kumbha","Meena"],
+      hi: ["मेष","वृषभ","मिथुन","कर्क","सिंह","कन्या","तुला","वृश्चिक","धनु","मकर","कुंभ","मीन"]
+    };
+    const PLANET_HI = { Sun:"सूर्य", Moon:"चंद्र", Mars:"मंगल", Mercury:"बुध", Jupiter:"गुरु", Venus:"शुक्र", Saturn:"शनि", Rahu:"राहु", Ketu:"केतु" };
 
     const LUNAR_FESTIVALS = {
-      "0-0":"Ugadi / Gudi Padwa","0-8":"Rama Navami","0-14":"Hanuman Jayanti","1-2":"Akshaya Tritiya","1-14":"Buddha Purnima",
-      "3-10":"Devshayani Ekadashi","3-14":"Guru Purnima","4-4":"Nag Panchami","4-14":"Raksha Bandhan","4-22":"Krishna Janmashtami",
-      "5-3":"Ganesh Chaturthi","5-13":"Anant Chaturdashi","5-29":"Mahalaya Amavasya","6-0":"Sharad Navratri Begins",
-      "6-7":"Durga Ashtami","6-9":"Dussehra (Vijayadashami)","6-27":"Dhanteras","6-29":"Diwali (Lakshmi Puja)",
-      "7-0":"Govardhan Puja","7-1":"Bhai Dooj","7-10":"Devutthana Ekadashi","7-14":"Kartik Purnima",
-      "10-4":"Vasant Panchami","10-28":"Maha Shivaratri","11-14":"Holi (Holika Dahan)"
+      "0-0":  { en:"Ugadi / Gudi Padwa", hi:"उगादि / गुड़ी पड़वा" },
+      "0-8":  { en:"Rama Navami", hi:"राम नवमी" },
+      "0-14": { en:"Hanuman Jayanti", hi:"हनुमान जयंती" },
+      "1-2":  { en:"Akshaya Tritiya", hi:"अक्षय तृतीया" },
+      "1-14": { en:"Buddha Purnima", hi:"बुद्ध पूर्णिमा" },
+      "3-10": { en:"Devshayani Ekadashi", hi:"देवशयनी एकादशी" },
+      "3-14": { en:"Guru Purnima", hi:"गुरु पूर्णिमा" },
+      "4-4":  { en:"Nag Panchami", hi:"नाग पंचमी" },
+      "4-14": { en:"Raksha Bandhan", hi:"रक्षा बंधन" },
+      "4-22": { en:"Krishna Janmashtami", hi:"कृष्ण जन्माष्टमी" },
+      "5-3":  { en:"Ganesh Chaturthi", hi:"गणेश चतुर्थी" },
+      "5-13": { en:"Anant Chaturdashi", hi:"अनंत चतुर्दशी" },
+      "5-29": { en:"Mahalaya Amavasya", hi:"महालया अमावस्या" },
+      "6-0":  { en:"Sharad Navratri Begins", hi:"शारदीय नवरात्रि प्रारंभ" },
+      "6-7":  { en:"Durga Ashtami", hi:"दुर्गा अष्टमी" },
+      "6-9":  { en:"Dussehra (Vijayadashami)", hi:"दशहरा (विजयादशमी)" },
+      "6-27": { en:"Dhanteras", hi:"धनतेरस" },
+      "6-29": { en:"Diwali (Lakshmi Puja)", hi:"दीपावली (लक्ष्मी पूजा)" },
+      "7-0":  { en:"Govardhan Puja", hi:"गोवर्धन पूजा" },
+      "7-1":  { en:"Bhai Dooj", hi:"भाई दूज" },
+      "7-10": { en:"Devutthana Ekadashi", hi:"देवउठनी एकादशी" },
+      "7-14": { en:"Kartik Purnima", hi:"कार्तिक पूर्णिमा" },
+      "10-4": { en:"Vasant Panchami", hi:"वसंत पंचमी" },
+      "10-28":{ en:"Maha Shivaratri", hi:"महाशिवरात्रि" },
+      "11-14":{ en:"Holi (Holika Dahan)", hi:"होली (होलिका दहन)" },
+      "makar":{ en:"Makar Sankranti", hi:"मकर संक्रांति" }
     };
 
     const EXPLAINERS = {
-      "Devutthana Ekadashi": "Marks Lord Vishnu's awakening from four months of cosmic sleep (Chaturmas), reopening the auspicious season for weddings and Griha Pravesh.",
-      "Kartik Purnima": "Celebrated as Dev Deepawali; considered highly meritorious for sacred river baths, lighting diyas, and charity.",
-      "Maha Shivaratri": "The Great Night of Shiva—observed with night-long vigil (Jagaran), fasting, and Bilva leaf offerings.",
-      "Holi (Holika Dahan)": "Commemorates the triumph of devotion over ego (Prahlada & Holika) and welcomes the arrival of spring.",
-      "Makar Sankranti": "Marks the Sun's transition into Makara (Capricorn) and the start of Uttarayana, the auspicious northward journey of the Sun.",
-      "Ugadi / Gudi Padwa": "Marks the Lunar New Year (Chaitra Shukla Pratipada) and the beginning of Chaitra Navratri.",
-      "Rama Navami": "Celebrates the birth of Lord Rama in Ayodhya during the midday (Madhyahna) window of Chaitra Shukla Navami.",
-      "Akshaya Tritiya": "One of the most auspicious 'Abujh Muhurat' days of the year—believed to bring unending prosperity to new ventures.",
-      "Devshayani Ekadashi": "Marks the start of Chaturmas when Lord Vishnu enters Yogic sleep; weddings and major ceremonies pause for four months.",
-      "Guru Purnima": "Dedicated to Sage Vyasa and spiritual/academic teachers, honoring the lineage of knowledge.",
-      "Raksha Bandhan": "Celebrates the protective bond between siblings on Shravana Purnima.",
-      "Krishna Janmashtami": "Marks the midnight birth of Lord Krishna on Ashtami of Krishna Paksha.",
-      "Ganesh Chaturthi": "Celebrates the arrival of Lord Ganesha, remover of obstacles and patron of new beginnings.",
-      "Dussehra (Vijayadashami)": "Celebrates Lord Rama's victory over Ravana and Goddess Durga's triumph over Mahishasura.",
-      "Diwali (Lakshmi Puja)": "The festival of lights on Kartika Amavasya—invoking Goddess Lakshmi for prosperity and wisdom."
+      "7-10": { en:"Marks Lord Vishnu's awakening from Chaturmas, reopening the auspicious season for weddings and Griha Pravesh.", hi:"चातुर्मास के बाद भगवान विष्णु के योगनिद्रा से जागने का दिन; इसी दिन से विवाह व गृह प्रवेश जैसे मांगलिक कार्य पुनः प्रारंभ होते हैं।" },
+      "7-14": { en:"Celebrated as Dev Deepawali; considered highly meritorious for sacred river baths, lighting diyas, and charity.", hi:"देव दीपावली के रूप में मनाया जाता है; पवित्र स्नान, दीपदान और दान-पुण्य के लिए अत्यंत शुभ माना जाता है।" },
+      "10-28":{ en:"The Great Night of Shiva—observed with night-long vigil (Jagaran), fasting, and Bilva leaf offerings.", hi:"भगवान शिव की महान रात्रि—रात्रि जागरण, उपवास और बेलपत्र अर्पण के साथ मनाई जाती है।" },
+      "11-14":{ en:"Commemorates the triumph of devotion over ego (Prahlada & Holika) and welcomes spring.", hi:"अहंकार पर भक्ति की विजय (प्रह्लाद व होलिका) और वसंत ऋतु के स्वागत का पर्व।" },
+      "makar":{ en:"Marks the Sun's transition into Makara (Capricorn) and the start of Uttarayana.", hi:"सूर्य के मकर राशि में प्रवेश और शुभ उत्तरायण काल के प्रारंभ का पर्व।" },
+      "0-0":  { en:"Marks the Hindu Lunar New Year (Chaitra Shukla Pratipada) and the start of Chaitra Navratri.", hi:"हिन्दू नववर्ष (चैत्र शुक्ल प्रतिपदा) और चैत्र नवरात्रि के प्रारंभ का दिन।" },
+      "0-8":  { en:"Celebrates the birth of Lord Rama in Ayodhya during the midday window.", hi:"चैत्र शुक्ल नवमी के मध्याह्न काल में भगवान श्री राम के जन्मोत्सव का पावन दिन।" },
+      "1-2":  { en:"One of the most auspicious 'Abujh Muhurat' days—believed to bring unending prosperity.", hi:"वर्ष के सबसे शुभ 'अबूझ मुहूर्त' दिनों में से एक—नए कार्यों और दान के लिए अक्षय फलदायी।" },
+      "3-10": { en:"Marks the start of Chaturmas; weddings and major ceremonies pause for four months.", hi:"चातुर्मास का प्रारंभ; अगले चार माह तक विवाह आदि मांगलिक कार्यों पर विराम रहता है।" },
+      "6-9":  { en:"Celebrates Lord Rama's victory over Ravana and Goddess Durga's triumph over Mahishasura.", hi:"अधर्म पर धर्म की विजय—भगवान राम की रावण पर और माँ दुर्गा की महिषासुर पर विजय का पर्व।" },
+      "6-29": { en:"The festival of lights on Kartika Amavasya—invoking Goddess Lakshmi for prosperity.", hi:"कार्तिक अमावस्या पर प्रकाश का महापर्व—सुख-समृद्धि के लिए माँ लक्ष्मी और गणेश जी का पूजन।" }
     };
 
     function getDayExplainer(p) {
-      if (p.festival && EXPLAINERS[p.festival]) return EXPLAINERS[p.festival];
-      if (p.tithiIdx === 10 || p.tithiIdx === 25) return "Ekadashi is dedicated to Lord Vishnu; traditionally observed with fasting (upavas) for spiritual clarity and discipline.";
-      if (p.tithiIdx === 14) return "Purnima (Full Moon) amplifies lunar energy; auspicious for Satyanarayan Puja, meditation, and charity.";
-      if (p.tithiIdx === 29) return "Amavasya (New Moon) is dedicated to honoring ancestors (Pitru Tarpan) and quiet introspection.";
-      if (p.tithiIdx === 12 || p.tithiIdx === 27) return "Pradosh Vrat (Trayodashi) is dedicated to Lord Shiva, especially observed during the twilight window after sunset.";
-      if (p.tithiIdx === 18) return "Sankashti Chaturthi is dedicated to Lord Ganesha; devotees fast until moonrise for obstacle removal.";
-      if (p.tithiIdx === 3) return "Vinayaka Chaturthi honors Lord Ganesha during the waxing moon; favorable for prayers before new tasks.";
-      if (p.tithiIdx === 7 || p.tithiIdx === 22) return "Ashtami is sacred to Goddess Durga and Kalabhairava; often avoided for starting major new journeys.";
-      return `${p.paksha} ${p.tithi} in ${p.masa} Masa under ${p.nakshatra} Nakshatra—suitable for routine spiritual practice and daily duties.`;
+      if (p.festKey && EXPLAINERS[p.festKey]) return EXPLAINERS[p.festKey][lang];
+      if (p.tithiIdx === 10 || p.tithiIdx === 25) return lang === "hi"
+        ? "एकादशी भगवान विष्णु को समर्पित है; मानसिक शुद्धि और आध्यात्मिक अनुशासन हेतु उपवास रखा जाता है।"
+        : "Ekadashi is dedicated to Lord Vishnu; traditionally observed with fasting for spiritual clarity.";
+      if (p.tithiIdx === 14) return lang === "hi"
+        ? "पूर्णिमा (पूर्ण चंद्र) सत्यनारायण कथा, ध्यान और दान-पुण्य के लिए अत्यंत शुभ मानी जाती है।"
+        : "Purnima (Full Moon) amplifies lunar energy; auspicious for Satyanarayan Puja, meditation, and charity.";
+      if (p.tithiIdx === 29) return lang === "hi"
+        ? "अमावस्या पितृ तर्पण, पूर्वजों के स्मरण और शांत आत्मचिंतन के लिए समर्पित होती है।"
+        : "Amavasya (New Moon) is dedicated to honoring ancestors (Pitru Tarpan) and quiet introspection.";
+      if (p.tithiIdx === 12 || p.tithiIdx === 27) return lang === "hi"
+        ? "प्रदोष व्रत (त्रयोदशी) भगवान शिव को समर्पित है, विशेषकर सूर्यास्त के बाद प्रदोष काल में।"
+        : "Pradosh Vrat (Trayodashi) is dedicated to Lord Shiva, especially observed during twilight after sunset.";
+      if (p.tithiIdx === 18) return lang === "hi"
+        ? "संकष्टी चतुर्थी भगवान गणेश को समर्पित है; विघ्न निवारण हेतु चंद्रोदय तक व्रत रखा जाता है।"
+        : "Sankashti Chaturthi is dedicated to Lord Ganesha; devotees fast until moonrise for obstacle removal.";
+      return lang === "hi"
+        ? `${MASAS.hi[p.masaIdx]} मास के ${I18N.hi[p.pakshaKey]} पक्ष की ${TITHIS.hi[p.tithiIdx]} एवं ${NAKSHATRAS.hi[p.nakIdx]} नक्षत्र—दैनिक पूजा व नियमित कार्यों के लिए उपयुक्त।`
+        : `${I18N.en[p.pakshaKey]} ${TITHIS.en[p.tithiIdx]} in ${MASAS.en[p.masaIdx]} Masa under ${NAKSHATRAS.en[p.nakIdx]} Nakshatra—suitable for routine spiritual practice and daily duties.`;
     }
 
     // --- Astronomical Core ---
@@ -412,7 +497,6 @@
       );
     }
 
-    // Simplified Keplerian Geocentric Ecliptic Longitudes (J2000)
     const PLANET_ELEMS = {
       Mercury: { a:0.38710, e:0.20563, i:7.005, O:48.331, w:29.124, M0:174.796, n:4.09233445 },
       Venus:   { a:0.72333, e:0.00677, i:3.395, O:76.680, w:54.884, M0:50.115,  n:1.60213034 },
@@ -425,14 +509,13 @@
       const M = toRad(norm(el.M0 + el.n * d));
       let E = M + el.e * Math.sin(M);
       for (let k = 0; k < 4; k++) E = E - (E - el.e * Math.sin(E) - M) / (1 - el.e * Math.cos(E));
-      const xv = el.a * (Math.cos(E) - el.e);
-      const yv = el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E);
-      const v = Math.atan2(yv, xv);
-      const r = Math.hypot(xv, yv);
+      const xv = el.a * (Math.cos(E) - el.e), yv = el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E);
+      const v = Math.atan2(yv, xv), r = Math.hypot(xv, yv);
       const O = toRad(el.O), w = toRad(el.w), i = toRad(el.i);
-      const x = r * (Math.cos(O)*Math.cos(v+w) - Math.sin(O)*Math.sin(v+w)*Math.cos(i));
-      const y = r * (Math.sin(O)*Math.cos(v+w) + Math.cos(O)*Math.sin(v+w)*Math.cos(i));
-      return { x, y };
+      return {
+        x: r * (Math.cos(O)*Math.cos(v+w) - Math.sin(O)*Math.sin(v+w)*Math.cos(i)),
+        y: r * (Math.sin(O)*Math.cos(v+w) + Math.cos(O)*Math.sin(v+w)*Math.cos(i))
+      };
     }
 
     function getPlanetLon(name, jd) {
@@ -441,9 +524,8 @@
       const d = jd - 2451545.0;
       if (name === "Rahu") return norm(125.0445 - 0.05295377 * d);
       if (name === "Ketu") return norm(125.0445 - 0.05295377 * d + 180);
-
       const sunLon = toRad(getSunLon(jd));
-      const ex = -Math.cos(sunLon), ey = -Math.sin(sunLon); // Earth helio approx (r~1)
+      const ex = -Math.cos(sunLon), ey = -Math.sin(sunLon);
       const p = helioXY(PLANET_ELEMS[name], d);
       return norm(toDeg(Math.atan2(p.y - ey, p.x - ex)));
     }
@@ -451,18 +533,13 @@
     function getAllPlanets(date) {
       const jd = getJD(new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0));
       const ayan = getAyanamsa(jd);
-      const names = ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
-      return names.map(name => {
-        const lon = getPlanetLon(name, jd);
-        const lonNext = getPlanetLon(name, jd + 1);
+      return ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"].map(name => {
+        const lon = getPlanetLon(name, jd), lonNext = getPlanetLon(name, jd + 1);
         let delta = lonNext - lon;
         if (delta > 180) delta -= 360;
         if (delta < -180) delta += 360;
-        const sid = norm(lon - ayan);
-        const rashiIdx = Math.floor(sid / 30);
-        const deg = (sid % 30).toFixed(1);
-        const retro = (name !== "Sun" && name !== "Moon" && delta < 0);
-        return { name, sid, rashiIdx, rashi: RASHIS[rashiIdx], deg, retro };
+        const sid = norm(lon - ayan), rashiIdx = Math.floor(sid / 30);
+        return { name, rashiIdx, deg: (sid % 30).toFixed(1), retro: (name !== "Sun" && name !== "Moon" && delta < 0) };
       });
     }
 
@@ -497,7 +574,7 @@
       };
     }
 
-    function getKarana(diff) {
+    function getKaranaKey(diff) {
       const k = Math.floor(diff / 6);
       if (k === 0) return "Kimstughna";
       if (k === 57) return "Shakuni";
@@ -513,7 +590,7 @@
       const sunSid = norm(sun - ayanamsa), moonSid = norm(moon - ayanamsa), diff = norm(moon - sun);
 
       const tithiIdx = Math.floor(diff / 12);
-      const paksha = tithiIdx < 15 ? "Shukla" : "Krishna";
+      const pakshaKey = tithiIdx < 15 ? "shukla" : "krishna";
       const nakIdx = Math.floor(moonSid / (360 / 27));
       const yogaIdx = Math.floor(norm(sunSid + moonSid) / (360 / 27));
       const sunRashiIdx = Math.floor(sunSid / 30);
@@ -526,16 +603,14 @@
       const vikramSamvat = (d.getMonth() < 4 && masaIdx >= 9) ? gy + 56 : gy + 57;
       const shakaSamvat = vikramSamvat - 135;
 
-      let festival = LUNAR_FESTIVALS[`${masaIdx}-${tithiIdx}`] || null;
-      if (d.getMonth() === 0 && d.getDate() === 14) festival = "Makar Sankranti";
+      let festKey = LUNAR_FESTIVALS[`${masaIdx}-${tithiIdx}`] ? `${masaIdx}-${tithiIdx}` : null;
+      if (d.getMonth() === 0 && d.getDate() === 14) festKey = "makar";
 
       const illum = Math.round(((1 - Math.cos(toRad(diff))) / 2) * 100);
       const res = {
-        jd, dow: d.getDay(), tithiIdx, tithi: TITHIS[tithiIdx], shortTithi: TITHI_SHORT[tithiIdx],
-        paksha, nakIdx, nakshatra: NAKSHATRAS[nakIdx], yoga: YOGAS[yogaIdx], karana: getKarana(diff),
-        masaIdx, masaNum: masaIdx + 1, masa: MASAS[masaIdx], sunRashiIdx,
-        vikramSamvat, shakaSamvat, vaara: VAARAS[d.getDay()], illum, festival,
-        isSpecial: Boolean(festival) || [10, 14, 25, 29].includes(tithiIdx)
+        jd, dow: d.getDay(), tithiIdx, pakshaKey, nakIdx, yogaIdx, karanaKey: getKaranaKey(diff),
+        masaIdx, masaNum: masaIdx + 1, sunRashiIdx, vikramSamvat, shakaSamvat, illum, festKey,
+        isSpecial: Boolean(festKey) || [10, 14, 25, 29].includes(tithiIdx)
       };
       if (includeExtras) {
         res.tithiStart = findTithiTime(jd, tithiIdx * 12);
@@ -545,26 +620,56 @@
       return res;
     }
 
-    // --- Maithil Brahmin Muhurat Engine ---
+    // --- Formatting (Always Latin Numerals + AM/PM) ---
+    function fmtTime(dt) {
+      let h = dt.getHours(), m = String(dt.getMinutes()).padStart(2, "0");
+      const ap = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
+      return `${h}:${m} ${ap}`;
+    }
+    function fmtShortDate(dt) {
+      const L = I18N[lang];
+      return `${L.gDaysShort[dt.getDay()]}, ${dt.getDate()} ${L.gMonthsShort[dt.getMonth()]} ${dt.getFullYear()}`;
+    }
+    function fmtFullDate(dt) {
+      const L = I18N[lang];
+      return `${L.gDays[dt.getDay()]}, ${dt.getDate()} ${L.gMonths[dt.getMonth()]} ${dt.getFullYear()}`;
+    }
+    function fmtDT(dt) {
+      return `${dt.getDate()} ${I18N[lang].gMonthsShort[dt.getMonth()]}, ${fmtTime(dt)}`;
+    }
+    function fmtDays(n) {
+      const L = I18N[lang];
+      return n === 0 ? L.today : (n === 1 ? `1 ${L.day}` : `${n} ${L.days}`);
+    }
+    function getKaranaName(k) { return lang === "hi" ? KARANAS_MAP[k] : k; }
+    function getPlanetName(n) { return lang === "hi" ? PLANET_HI[n] : n; }
+
+    // --- Maithil Muhurat Engine ---
     const MUHURAT_RULES = {
-      vivah:    { label: "Vivah (Marriage)", naks: [3,4,9,11,12,14,16,18,20,25,26], badDow: [2,6], strict: true },
-      griha:    { label: "Griha Pravesh",    naks: [3,4,11,13,16,20,22,25,26],     badDow: [0,2], strict: true },
-      vehicle:  { label: "Vehicle Purchase", naks: [0,6,7,12,13,14,21,22,23,26],   badDow: [2,6], strict: false },
-      namkaran: { label: "Namkaran",         naks: [0,3,4,6,7,11,12,13,14,16,21,22,23,25,26], badDow: [2,6], strict: false },
-      business: { label: "Business Start",   naks: [0,3,4,6,7,11,12,13,14,16,20,21,22,26],    badDow: [2],   strict: false }
+      vivah:    { naks: [3,4,9,11,12,14,16,18,20,25,26], badDow: [2,6], strict: true },
+      griha:    { naks: [3,4,11,13,16,20,22,25,26],     badDow: [0,2], strict: true },
+      vehicle:  { naks: [0,6,7,12,13,14,21,22,23,26],   badDow: [2,6], strict: false },
+      namkaran: { naks: [0,3,4,6,7,11,12,13,14,16,21,22,23,25,26], badDow: [2,6], strict: false },
+      business: { naks: [0,3,4,6,7,11,12,13,14,16,20,21,22,26],    badDow: [2],   strict: false }
     };
 
     function isCombust(jd) {
-      const sun = getSunLon(jd);
-      const ven = getPlanetLon("Venus", jd);
-      const jup = getPlanetLon("Jupiter", jd);
-      const dV = Math.min(norm(ven - sun), norm(sun - ven));
-      const dJ = Math.min(norm(jup - sun), norm(sun - jup));
-      return dV < 9 || dJ < 11;
+      const sun = getSunLon(jd), ven = getPlanetLon("Venus", jd), jup = getPlanetLon("Jupiter", jd);
+      return Math.min(norm(ven - sun), norm(sun - ven)) < 9 || Math.min(norm(jup - sun), norm(sun - jup)) < 11;
     }
 
-    function renderMuhurat(type = "vivah") {
-      const rule = MUHURAT_RULES[type];
+    function renderMuhuratChips() {
+      const cats = I18N[lang].muhuratCats;
+      document.getElementById("muhuratChips").innerHTML = Object.keys(cats).map(k =>
+        `<div class="chip ${k===currentMuhurat?'active':''}" onclick="selectMuhurat('${k}')">${cats[k]}</div>`
+      ).join("");
+    }
+
+    function renderMuhurat(type = currentMuhurat) {
+      currentMuhurat = type;
+      renderMuhuratChips();
+      const rule = MUHURAT_RULES[type], L = I18N[lang];
       const base = new Date(); base.setHours(0,0,0,0);
       const results = [];
 
@@ -572,17 +677,13 @@
         const dt = new Date(base.getTime() + i * 86400000);
         const p = getPanchang(dt, false);
         const t15 = p.tithiIdx % 15;
-
-        if ([3, 8, 13].includes(t15) || p.tithiIdx === 29) continue; // Rikta & Amavasya
-        if (rule.badDow.includes(p.dow)) continue;
-        if (!rule.naks.includes(p.nakIdx)) continue;
-        if (p.masaIdx === 5 && p.paksha === "Krishna") continue; // Pitru Paksha
-
+        if ([3, 8, 13].includes(t15) || p.tithiIdx === 29) continue;
+        if (rule.badDow.includes(p.dow) || !rule.naks.includes(p.nakIdx)) continue;
+        if (p.masaIdx === 5 && p.pakshaKey === "krishna") continue;
         if (rule.strict) {
-          if (p.sunRashiIdx === 8 || p.sunRashiIdx === 11) continue; // Kharmas (Dhanu/Meena)
+          if (p.sunRashiIdx === 8 || p.sunRashiIdx === 11) continue;
           const isChaturmas = (p.masaIdx === 3 && p.tithiIdx >= 10) || p.masaIdx === 4 || p.masaIdx === 5 || p.masaIdx === 6 || (p.masaIdx === 7 && p.tithiIdx < 10);
-          if (isChaturmas) continue;
-          if (isCombust(p.jd)) continue;
+          if (isChaturmas || isCombust(p.jd)) continue;
         }
         results.push({ dt, days: i, p, st: getSunTimes(dt) });
       }
@@ -590,55 +691,44 @@
       document.getElementById("muhuratList").innerHTML = results.length ? results.map(r => `
         <div class="list-item" onclick="jumpToDate(${r.dt.getFullYear()},${r.dt.getMonth()},${r.dt.getDate()})" style="cursor:pointer;">
           <div>
-            <div class="li-name">${r.dt.toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short", year:"numeric" })}</div>
-            <div class="li-sub">${r.p.masa} ${r.p.paksha} ${r.p.tithi} • ${r.p.nakshatra}<br>Abhijit: ${fmtTime(r.st.abhijitStart)} – ${fmtTime(r.st.abhijitEnd)}</div>
+            <div class="li-name">${fmtShortDate(r.dt)}</div>
+            <div class="li-sub">${MASAS[lang][r.p.masaIdx]} ${L[r.p.pakshaKey]} ${TITHIS[lang][r.p.tithiIdx]} • ${NAKSHATRAS[lang][r.p.nakIdx]}<br>${L.abhijit}: ${fmtTime(r.st.abhijitStart)} – ${fmtTime(r.st.abhijitEnd)}</div>
           </div>
           <div class="li-badge">${fmtDays(r.days)}</div>
         </div>
-      `).join("") : `<div class="note" style="color:var(--warn);">No strict ${rule.label} dates in the next 90 days (likely Kharmas, Chaturmas, or Guru/Shukra Asta).</div>`;
+      `).join("") : `<div class="note" style="color:var(--warn);">${L.noMuhurat}</div>`;
     }
-
-    function selectMuhurat(type, el) {
-      document.querySelectorAll("#muhuratChips .chip").forEach(c => c.classList.remove("active"));
-      if (el) el.classList.add("active");
-      renderMuhurat(type);
-    }
+    function selectMuhurat(type) { renderMuhurat(type); }
 
     // --- Astronomy & Eclipses ---
     const ECLIPSES = [
-      { date: "2027-02-06", name: "Annular Solar Eclipse", type: "Solar", time: "5:25 PM – 11:25 PM IST", india: false, sutak: "Not applicable (Not visible in India)" },
-      { date: "2027-02-20", name: "Penumbral Lunar Eclipse", type: "Lunar", time: "2:42 AM – 7:22 AM IST", india: true, sutak: "No Sutak (Penumbral / Upachhaya)" },
-      { date: "2027-08-02", name: "Total Solar Eclipse", type: "Solar", time: "1:00 PM – 6:15 PM IST", india: true, sutak: "Starts ~1:00 AM IST (12h prior)" },
-      { date: "2027-08-17", name: "Penumbral Lunar Eclipse", type: "Lunar", time: "10:55 AM – 4:10 PM IST", india: false, sutak: "Not applicable (Not visible in India)" },
-      { date: "2028-01-12", name: "Partial Lunar Eclipse", type: "Lunar", time: "7:38 AM – 11:48 AM IST", india: false, sutak: "Not applicable (Not visible in India)" },
-      { date: "2028-07-06", name: "Partial Lunar Eclipse", type: "Lunar", time: "9:14 PM – 2:24 AM IST", india: true, sutak: "Starts ~12:14 PM IST (9h prior)" }
+      { date:"2027-02-06", en:"Annular Solar Eclipse", hi:"कंकणाकृति सूर्य ग्रहण", time:"5:25 PM – 11:25 PM IST", india:false, sutakEn:"Not applicable (Not visible in India)", sutakHi:"लागू नहीं (भारत में अदृश्य)" },
+      { date:"2027-02-20", en:"Penumbral Lunar Eclipse", hi:"उपच्छाया चंद्र ग्रहण", time:"2:42 AM – 7:22 AM IST", india:true, sutakEn:"No Sutak (Penumbral)", sutakHi:"सूतक मान्य नहीं (उपच्छाया)" },
+      { date:"2027-08-02", en:"Total Solar Eclipse", hi:"पूर्ण सूर्य ग्रहण", time:"1:00 PM – 6:15 PM IST", india:true, sutakEn:"Starts ~1:00 AM IST (12h prior)", sutakHi:"प्रारंभ ~1:00 AM IST (12 घंटे पूर्व)" },
+      { date:"2027-08-17", en:"Penumbral Lunar Eclipse", hi:"उपच्छाया चंद्र ग्रहण", time:"10:55 AM – 4:10 PM IST", india:false, sutakEn:"Not applicable (Not visible in India)", sutakHi:"लागू नहीं (भारत में अदृश्य)" },
+      { date:"2028-01-12", en:"Partial Lunar Eclipse", hi:"खंडग्रास चंद्र ग्रहण", time:"7:38 AM – 11:48 AM IST", india:false, sutakEn:"Not applicable (Not visible in India)", sutakHi:"लागू नहीं (भारत में अदृश्य)" },
+      { date:"2028-07-06", en:"Partial Lunar Eclipse", hi:"खंडग्रास चंद्र ग्रहण", time:"9:14 PM – 2:24 AM IST", india:true, sutakEn:"Starts ~12:14 PM IST (9h prior)", sutakHi:"प्रारंभ ~12:14 PM IST (9 घंटे पूर्व)" }
     ];
 
     function renderPlanets() {
       const val = document.getElementById("astroDate").value;
       const dt = val ? new Date(val + "T12:00:00") : new Date();
-      const list = getAllPlanets(dt);
-      document.getElementById("planetList").innerHTML = list.map(pl => `
+      document.getElementById("planetList").innerHTML = getAllPlanets(dt).map(pl => `
         <div class="row">
-          <span class="lbl" style="color:var(--text);font-weight:600;">${pl.name} ${pl.retro ? '<span class="warn-tag">Vakri</span>' : ''}</span>
-          <span class="val mint">${pl.rashi} ${pl.deg}°</span>
-        </div>
-      `).join("");
+          <span class="lbl" style="color:var(--text);font-weight:600;">${getPlanetName(pl.name)} ${pl.retro ? `<span class="warn-tag">${I18N[lang].vakri}</span>` : ''}</span>
+          <span class="val mint">${RASHIS[lang][pl.rashiIdx]} ${pl.deg}°</span>
+        </div>`).join("");
     }
 
     function renderTransits() {
       const base = new Date(); base.setHours(12,0,0,0);
-      const tracked = ["Sun","Mars","Mercury","Venus","Jupiter","Saturn"];
-      const startMap = {};
+      const tracked = ["Sun","Mars","Mercury","Venus","Jupiter","Saturn"], startMap = {}, found = [];
       getAllPlanets(base).forEach(p => startMap[p.name] = p.rashiIdx);
-      const found = [];
-
       for (let i = 1; i <= 180 && found.length < 6; i++) {
         const dt = new Date(base.getTime() + i * 86400000);
-        const pls = getAllPlanets(dt);
-        for (const p of pls) {
+        for (const p of getAllPlanets(dt)) {
           if (tracked.includes(p.name) && p.rashiIdx !== startMap[p.name]) {
-            found.push({ name: p.name, to: p.rashi, date: dt, days: i });
+            found.push({ name: p.name, rashiIdx: p.rashiIdx, date: dt, days: i });
             startMap[p.name] = p.rashiIdx;
           }
         }
@@ -646,36 +736,33 @@
       document.getElementById("transitList").innerHTML = found.map(t => `
         <div class="list-item">
           <div>
-            <div class="li-name">${t.name} enters ${t.to}</div>
-            <div class="li-sub">${t.date.toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" })}</div>
+            <div class="li-name">${getPlanetName(t.name)} ${I18N[lang].enters} ${RASHIS[lang][t.rashiIdx]}</div>
+            <div class="li-sub">${t.date.getDate()} ${I18N[lang].gMonthsShort[t.date.getMonth()]} ${t.date.getFullYear()}</div>
           </div>
           <div class="li-badge">${fmtDays(t.days)}</div>
-        </div>
-      `).join("");
+        </div>`).join("");
     }
 
     function renderEclipses() {
-      const today = new Date().toISOString().slice(0, 10);
-      const list = ECLIPSES.filter(e => e.date >= today);
-      document.getElementById("eclipseList").innerHTML = list.map(e => `
-        <div class="list-item" style="align-items:flex-start;">
+      const today = new Date().toISOString().slice(0, 10), L = I18N[lang];
+      document.getElementById("eclipseList").innerHTML = ECLIPSES.filter(e => e.date >= today).map(e => {
+        const dt = new Date(e.date + "T12:00:00");
+        return `<div class="list-item" style="align-items:flex-start;">
           <div>
-            <div class="li-name">${e.name}</div>
-            <div class="li-sub">${new Date(e.date + "T12:00:00").toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" })} • ${e.time}<br><b>Sutak:</b> ${e.sutak}</div>
+            <div class="li-name">${e[lang]}</div>
+            <div class="li-sub">${dt.getDate()} ${L.gMonthsShort[dt.getMonth()]} ${dt.getFullYear()} • ${e.time}<br><b>${L.sutak}:</b> ${lang==="hi"?e.sutakHi:e.sutakEn}</div>
           </div>
-          <div class="${e.india ? 'fest-tag' : 'warn-tag'}">${e.india ? 'India' : 'Outside'}</div>
-        </div>
-      `).join("");
+          <div class="${e.india ? 'fest-tag' : 'warn-tag'}">${e.india ? L.india : L.outside}</div>
+        </div>`;
+      }).join("");
     }
 
     // --- Festivals & Tithi Scanner ---
     function getUpcomingFestivals(limit = 16) {
-      const list = [], seen = new Set(), base = new Date();
-      base.setHours(0,0,0,0);
+      const list = [], seen = new Set(), base = new Date(); base.setHours(0,0,0,0);
       for (let i = 0; i <= 365 && list.length < limit; i++) {
-        const dt = new Date(base.getTime() + i * 86400000);
-        const p = getPanchang(dt, false);
-        if (p.festival && !seen.has(p.festival)) { seen.add(p.festival); list.push({ name: p.festival, date: dt, days: i, p }); }
+        const dt = new Date(base.getTime() + i * 86400000), p = getPanchang(dt, false);
+        if (p.festKey && !seen.has(p.festKey)) { seen.add(p.festKey); list.push({ festKey: p.festKey, date: dt, days: i, p }); }
       }
       return list;
     }
@@ -683,62 +770,81 @@
     function findNextTithi(pakshaFilter, tithi15Idx) {
       const base = new Date(); base.setHours(0,0,0,0);
       for (let i = 0; i <= 60; i++) {
-        const dt = new Date(base.getTime() + i * 86400000);
-        const p = getPanchang(dt, false);
-        if ((p.tithiIdx % 15) === tithi15Idx && (pakshaFilter === "Any" || p.paksha === pakshaFilter)) {
+        const dt = new Date(base.getTime() + i * 86400000), p = getPanchang(dt, false);
+        if ((p.tithiIdx % 15) === tithi15Idx && (pakshaFilter === "Any" || p.pakshaKey === pakshaFilter)) {
           return { date: dt, days: i, p: getPanchang(dt, true) };
         }
       }
       return null;
     }
 
-    function fmtTime(dt) { return dt.toLocaleTimeString("en-IN", { hour:"numeric", minute:"2-digit", hour12:true }); }
-    function fmtDT(dt) { return dt.toLocaleDateString("en-IN", { day:"numeric", month:"short" }) + ", " + fmtTime(dt); }
-    function fmtDays(n) { return n === 0 ? "Today" : (n === 1 ? "1 Day" : `${n} Days`); }
-
     let viewDate = new Date(), selectedDate = new Date();
     const upcomingFests = getUpcomingFestivals(18);
+    let finderPaksha = "Any", finderTithi = 10, activeQuickIdx = 0;
+
+    function toggleLang() {
+      lang = lang === "en" ? "hi" : "en";
+      localStorage.setItem("panchang_lang", lang);
+      renderAll();
+    }
+
+    function applyStaticLabels() {
+      const L = I18N[lang];
+      document.getElementById("langBtn").innerText = lang === "en" ? "हिं" : "EN";
+      document.getElementById("todayBtn").innerText = L.today;
+      document.getElementById("topTitle").innerText = L.titles[currentTab];
+      ["calendar","panchang","muhurat","astro","countdown"].forEach(k => {
+        document.getElementById(`lbl-tab-${k}`).innerText = L.tabs[k];
+      });
+      document.getElementById("secMuhurat").innerText = L.secMuhurat;
+      document.getElementById("muhuratNote").innerText = L.muhuratNote;
+      document.getElementById("secPlanets").innerText = L.secPlanets;
+      document.getElementById("secTransits").innerText = L.secTransits;
+      document.getElementById("secEclipses").innerText = L.secEclipses;
+      document.getElementById("secTithiFinder").innerText = L.secTithiFinder;
+      document.getElementById("secFestList").innerText = L.secFestList;
+    }
 
     function switchTab(name) {
+      currentTab = name;
       document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
       document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
       document.getElementById(`view-${name}`).classList.add("active");
       document.getElementById(`tab-${name}`).classList.add("active");
-      const titles = { calendar:"Hindu Calendar", panchang:"Today's Panchang", muhurat:"Maithil Muhurat", astro:"Astronomy", countdown:"Countdowns" };
-      document.getElementById("topTitle").innerText = titles[name];
+      document.getElementById("topTitle").innerText = I18N[lang].titles[name];
       window.scrollTo(0, 0);
     }
 
     function renderHeader() {
-      const p = getPanchang(new Date(), false);
-      document.getElementById("topSub").innerText = `${p.masa} (Month ${p.masaNum}) • Vikram Samvat ${p.vikramSamvat}`;
+      const p = getPanchang(new Date(), false), L = I18N[lang];
+      document.getElementById("topSub").innerText = `${MASAS[lang][p.masaIdx]} (${L.month} ${p.masaNum}) • ${L.vs} ${p.vikramSamvat}`;
     }
 
     function renderBanner() {
-      const next = upcomingFests[0];
+      const next = upcomingFests[0], L = I18N[lang];
       if (!next) return;
       document.getElementById("nextFestBanner").innerHTML = `
         <div>
-          <div class="fest-kicker">Next Hindu Festival</div>
-          <div class="fest-name">${next.name}</div>
-          <div class="fest-date">${next.date.toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short", year:"numeric" })} • ${next.p.masa}</div>
+          <div class="fest-kicker">${L.nextFest}</div>
+          <div class="fest-name">${LUNAR_FESTIVALS[next.festKey][lang]}</div>
+          <div class="fest-date">${fmtShortDate(next.date)} • ${MASAS[lang][next.p.masaIdx]}</div>
         </div>
         <div class="days-badge">
           <div class="num">${next.days === 0 ? "★" : next.days}</div>
-          <div class="lbl">${next.days === 0 ? "Today" : (next.days === 1 ? "Day Left" : "Days Left")}</div>
+          <div class="lbl">${next.days === 0 ? L.today : (next.days === 1 ? L.dayLeft : L.daysLeft)}</div>
         </div>`;
     }
 
     function renderCalendar() {
-      const y = viewDate.getFullYear(), m = viewDate.getMonth();
-      document.getElementById("monthTitle").innerText = viewDate.toLocaleDateString("en-IN", { month:"long", year:"numeric" });
-      const firstP = getPanchang(new Date(y, m, 1), false), lastP = getPanchang(new Date(y, m + 1, 0), false);
-      document.getElementById("monthHindu").innerText = firstP.masa === lastP.masa
-        ? `${firstP.masa} (${firstP.masaNum}) • VS ${firstP.vikramSamvat}`
-        : `${firstP.masa} (${firstP.masaNum}) – ${lastP.masa} (${lastP.masaNum}) • VS ${firstP.vikramSamvat}`;
+      const y = viewDate.getFullYear(), m = viewDate.getMonth(), L = I18N[lang];
+      document.getElementById("monthTitle").innerText = `${L.gMonths[m]} ${y}`;
+      const fP = getPanchang(new Date(y, m, 1), false), lP = getPanchang(new Date(y, m + 1, 0), false);
+      document.getElementById("monthHindu").innerText = fP.masaIdx === lP.masaIdx
+        ? `${MASAS[lang][fP.masaIdx]} (${fP.masaNum}) • ${L.vsShort} ${fP.vikramSamvat}`
+        : `${MASAS[lang][fP.masaIdx]} (${fP.masaNum}) – ${MASAS[lang][lP.masaIdx]} (${lP.masaNum}) • ${L.vsShort} ${fP.vikramSamvat}`;
 
       const grid = document.getElementById("calGrid");
-      grid.innerHTML = ["SUN","MON","TUE","WED","THU","FRI","SAT"].map((d,i) => `<div class="dow ${i===0?'sun':''}">${d}</div>`).join("");
+      grid.innerHTML = L.dows.map((d,i) => `<div class="dow ${i===0?'sun':''}">${d}</div>`).join("");
       const firstDay = new Date(y, m, 1).getDay(), daysInMonth = new Date(y, m + 1, 0).getDate();
       const todayStr = new Date().toDateString(), selStr = selectedDate.toDateString();
 
@@ -749,37 +855,37 @@
         grid.innerHTML += `
           <div class="${cls}" onclick="selectDay(${y},${m},${d})">
             <div class="num">${d}</div>
-            <div class="t">${p.shortTithi}</div>
-            <div class="dots"><span class="dot-p ${p.paksha==='Shukla'?'dot-shukla':'dot-krishna'}"></span>${p.festival?'<span class="dot-fest"></span>':''}</div>
+            <div class="t">${TITHI_SHORT[lang][p.tithiIdx]}</div>
+            <div class="dots"><span class="dot-p ${p.pakshaKey==='shukla'?'dot-shukla':'dot-krishna'}"></span>${p.festKey?'<span class="dot-fest"></span>':''}</div>
           </div>`;
       }
       renderSelectedDetail();
     }
 
     function renderSelectedDetail() {
-      const p = getPanchang(selectedDate, true), st = p.sunTimes;
+      const p = getPanchang(selectedDate, true), st = p.sunTimes, L = I18N[lang];
       document.getElementById("detailCard").innerHTML = `
         <div class="card-head">
-          <h3>${selectedDate.toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long", year:"numeric" })}</h3>
-          ${p.festival ? `<span class="fest-tag">★ ${p.festival}</span>` : ""}
+          <h3>${fmtFullDate(selectedDate)}</h3>
+          ${p.festKey ? `<span class="fest-tag">★ ${LUNAR_FESTIVALS[p.festKey][lang]}</span>` : ""}
         </div>
-        <div class="row"><span class="lbl">Hindu Month</span><span class="val">${p.masa} (Month ${p.masaNum})</span></div>
-        <div class="row"><span class="lbl">Hindu Year</span><span class="val">Vikram ${p.vikramSamvat} • Shaka ${p.shakaSamvat}</span></div>
-        <div class="row"><span class="lbl">Tithi</span><span class="val">${p.paksha} ${p.tithi}</span></div>
-        <div class="row"><span class="lbl">Tithi Starts</span><span class="val mint">${fmtDT(p.tithiStart)}</span></div>
-        <div class="row"><span class="lbl">Tithi Ends</span><span class="val mint">${fmtDT(p.tithiEnd)}</span></div>
-        <div class="row"><span class="lbl">Nakshatra</span><span class="val">${p.nakshatra}</span></div>
-        <div class="row"><span class="lbl">Yoga / Karana</span><span class="val">${p.yoga} • ${p.karana}</span></div>
-        <div class="row"><span class="lbl">Sunrise / Sunset</span><span class="val">${fmtTime(st.sunrise)} • ${fmtTime(st.sunset)}</span></div>
-        <div class="row"><span class="lbl">Rahu Kaal</span><span class="val warn">${fmtTime(st.rahuStart)} – ${fmtTime(st.rahuEnd)}</span></div>
+        <div class="row"><span class="lbl">${L.hinduMonth}</span><span class="val">${MASAS[lang][p.masaIdx]} (${L.month} ${p.masaNum})</span></div>
+        <div class="row"><span class="lbl">${L.hinduYear}</span><span class="val">${L.vsShort} ${p.vikramSamvat} • ${L.shaka} ${p.shakaSamvat}</span></div>
+        <div class="row"><span class="lbl">${L.tithi}</span><span class="val">${L[p.pakshaKey]} ${TITHIS[lang][p.tithiIdx]}</span></div>
+        <div class="row"><span class="lbl">${L.tithiStart}</span><span class="val mint">${fmtDT(p.tithiStart)}</span></div>
+        <div class="row"><span class="lbl">${L.tithiEnd}</span><span class="val mint">${fmtDT(p.tithiEnd)}</span></div>
+        <div class="row"><span class="lbl">${L.nakshatra}</span><span class="val">${NAKSHATRAS[lang][p.nakIdx]}</span></div>
+        <div class="row"><span class="lbl">${L.yogaKarana}</span><span class="val">${YOGAS[lang][p.yogaIdx]} • ${getKaranaName(p.karanaKey)}</span></div>
+        <div class="row"><span class="lbl">${L.sunRiseSet}</span><span class="val">${fmtTime(st.sunrise)} • ${fmtTime(st.sunset)}</span></div>
+        <div class="row"><span class="lbl">${L.rahuKaal}</span><span class="val warn">${fmtTime(st.rahuStart)} – ${fmtTime(st.rahuEnd)}</span></div>
         <div class="why-box">
-          <div class="why-title">Why This Day Matters</div>
+          <div class="why-title">${L.whyMatters}</div>
           <div class="why-text">${getDayExplainer(p)}</div>
         </div>`;
     }
 
     function renderPanchangTab() {
-      const p = getPanchang(new Date(), true), st = p.sunTimes;
+      const p = getPanchang(new Date(), true), st = p.sunTimes, L = I18N[lang];
       document.getElementById("panchangHero").innerHTML = `
         <div class="hero">
           <div class="moon-box">
@@ -789,62 +895,75 @@
             </svg>
           </div>
           <div>
-            <div class="hero-tithi">${p.paksha} ${p.tithi}</div>
-            <div class="hero-sub">${p.masa} (Month ${p.masaNum}) • ${p.vaara}</div>
-            <div class="hero-year">Vikram Samvat ${p.vikramSamvat} • Shaka ${p.shakaSamvat}</div>
+            <div class="hero-tithi">${L[p.pakshaKey]} ${TITHIS[lang][p.tithiIdx]}</div>
+            <div class="hero-sub">${MASAS[lang][p.masaIdx]} (${L.month} ${p.masaNum}) • ${VAARAS[lang][p.dow]}</div>
+            <div class="hero-year">${L.vs} ${p.vikramSamvat} • ${L.shaka} ${p.shakaSamvat}</div>
           </div>
         </div>`;
       document.getElementById("panchangGrid").innerHTML = `
-        <div class="mini-card"><div class="mini-lbl">Nakshatra</div><div class="mini-val mint">${p.nakshatra}</div></div>
-        <div class="mini-card"><div class="mini-lbl">Moon Phase</div><div class="mini-val">${p.illum}% Lit</div></div>
-        <div class="mini-card"><div class="mini-lbl">Yoga</div><div class="mini-val">${p.yoga}</div></div>
-        <div class="mini-card"><div class="mini-lbl">Karana</div><div class="mini-val">${p.karana}</div></div>`;
+        <div class="mini-card"><div class="mini-lbl">${L.nakshatra}</div><div class="mini-val mint">${NAKSHATRAS[lang][p.nakIdx]}</div></div>
+        <div class="mini-card"><div class="mini-lbl">${L.moonPhase}</div><div class="mini-val">${p.illum}% ${L.lit}</div></div>
+        <div class="mini-card"><div class="mini-lbl">${L.yoga}</div><div class="mini-val">${YOGAS[lang][p.yogaIdx]}</div></div>
+        <div class="mini-card"><div class="mini-lbl">${L.karana}</div><div class="mini-val">${getKaranaName(p.karanaKey)}</div></div>`;
       document.getElementById("panchangTimings").innerHTML = `
-        <div class="card-head"><h3>Tithi & Sun Timings</h3></div>
-        <div class="row"><span class="lbl">Tithi Starts</span><span class="val mint">${fmtDT(p.tithiStart)}</span></div>
-        <div class="row"><span class="lbl">Tithi Ends</span><span class="val mint">${fmtDT(p.tithiEnd)}</span></div>
-        <div class="row"><span class="lbl">Sunrise</span><span class="val">${fmtTime(st.sunrise)}</span></div>
-        <div class="row"><span class="lbl">Sunset</span><span class="val">${fmtTime(st.sunset)}</span></div>`;
+        <div class="card-head"><h3>${L.tithiSunTimings}</h3></div>
+        <div class="row"><span class="lbl">${L.tithiStart}</span><span class="val mint">${fmtDT(p.tithiStart)}</span></div>
+        <div class="row"><span class="lbl">${L.tithiEnd}</span><span class="val mint">${fmtDT(p.tithiEnd)}</span></div>
+        <div class="row"><span class="lbl">${L.sunrise}</span><span class="val">${fmtTime(st.sunrise)}</span></div>
+        <div class="row"><span class="lbl">${L.sunset}</span><span class="val">${fmtTime(st.sunset)}</span></div>`;
       document.getElementById("panchangKaal").innerHTML = `
-        <div class="card-head"><h3>Muhurat & Kaal</h3></div>
-        <div class="row"><span class="lbl">Abhijit Muhurat</span><span class="val mint">${fmtTime(st.abhijitStart)} – ${fmtTime(st.abhijitEnd)}</span></div>
-        <div class="row"><span class="lbl">Rahu Kaal</span><span class="val warn">${fmtTime(st.rahuStart)} – ${fmtTime(st.rahuEnd)}</span></div>
-        <div class="row"><span class="lbl">Yamaganda</span><span class="val">${fmtTime(st.yamaStart)} – ${fmtTime(st.yamaEnd)}</span></div>`;
+        <div class="card-head"><h3>${L.muhuratKaal}</h3></div>
+        <div class="row"><span class="lbl">${L.abhijit}</span><span class="val mint">${fmtTime(st.abhijitStart)} – ${fmtTime(st.abhijitEnd)}</span></div>
+        <div class="row"><span class="lbl">${L.rahuKaal}</span><span class="val warn">${fmtTime(st.rahuStart)} – ${fmtTime(st.rahuEnd)}</span></div>
+        <div class="row"><span class="lbl">${L.yamaganda}</span><span class="val">${fmtTime(st.yamaStart)} – ${fmtTime(st.yamaEnd)}</span></div>`;
     }
 
-    function initCountdowns() {
-      document.getElementById("selTithi").innerHTML = TITHI_NAMES_15.map((t,i) => `<option value="${i}" ${i===10?'selected':''}>${t}</option>`).join("");
+    const QUICK_PRESETS = [["Any",10],["shukla",14],["krishna",14],["krishna",3],["Any",12]];
+    function renderCountdowns() {
+      const L = I18N[lang];
+      document.getElementById("quickChips").innerHTML = L.quickChips.map((lbl, idx) =>
+        `<div class="chip ${idx===activeQuickIdx?'active':''}" onclick="quickTithi(${idx})">${lbl}</div>`
+      ).join("");
+      document.getElementById("selPaksha").innerHTML = `
+        <option value="Any" ${finderPaksha==="Any"?"selected":""}>${L.anyPaksha}</option>
+        <option value="shukla" ${finderPaksha==="shukla"?"selected":""}>${L.shuklaFull}</option>
+        <option value="krishna" ${finderPaksha==="krishna"?"selected":""}>${L.krishnaFull}</option>`;
+      document.getElementById("selTithi").innerHTML = TITHI_NAMES_15[lang].map((t,i) =>
+        `<option value="${i}" ${i===finderTithi?'selected':''}>${t}</option>`
+      ).join("");
       updateTithiFinder();
+
       document.getElementById("festList").innerHTML = upcomingFests.map(f => `
         <div class="list-item" onclick="jumpToDate(${f.date.getFullYear()},${f.date.getMonth()},${f.date.getDate()})" style="cursor:pointer;">
           <div>
-            <div class="li-name">${f.name}</div>
-            <div class="li-sub">${f.date.toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short", year:"numeric" })} • ${f.p.masa} ${f.p.paksha} ${f.p.tithi}</div>
+            <div class="li-name">${LUNAR_FESTIVALS[f.festKey][lang]}</div>
+            <div class="li-sub">${fmtShortDate(f.date)} • ${MASAS[lang][f.p.masaIdx]} ${L[f.p.pakshaKey]} ${TITHIS[lang][f.p.tithiIdx]}</div>
           </div>
           <div class="li-badge">${fmtDays(f.days)}</div>
         </div>`).join("");
     }
 
-    function quickTithi(paksha, tithi15Idx, el) {
-      document.querySelectorAll("#quickChips .chip").forEach(c => c.classList.remove("active"));
-      if (el) el.classList.add("active");
-      document.getElementById("selPaksha").value = paksha;
-      document.getElementById("selTithi").value = String(tithi15Idx);
-      updateTithiFinder();
+    function quickTithi(idx) {
+      activeQuickIdx = idx;
+      finderPaksha = QUICK_PRESETS[idx][0];
+      finderTithi = QUICK_PRESETS[idx][1];
+      renderCountdowns();
     }
 
     function updateTithiFinder() {
-      const res = findNextTithi(document.getElementById("selPaksha").value, parseInt(document.getElementById("selTithi").value, 10));
+      finderPaksha = document.getElementById("selPaksha").value;
+      finderTithi = parseInt(document.getElementById("selTithi").value, 10);
+      const res = findNextTithi(finderPaksha, finderTithi), L = I18N[lang];
       if (!res) return;
       document.getElementById("finderResult").innerHTML = `
         <div>
-          <div class="fest-name" style="font-size:15px;">${res.p.paksha} ${res.p.tithi}</div>
-          <div class="fest-date">${res.date.toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short", year:"numeric" })} • ${res.p.masa}</div>
+          <div class="fest-name" style="font-size:15px;">${L[res.p.pakshaKey]} ${TITHIS[lang][res.p.tithiIdx]}</div>
+          <div class="fest-date">${fmtShortDate(res.date)} • ${MASAS[lang][res.p.masaIdx]}</div>
           <div class="fest-date" style="color:var(--mint);margin-top:3px;">${fmtDT(res.p.tithiStart)} → ${fmtDT(res.p.tithiEnd)}</div>
         </div>
         <div class="days-badge">
           <div class="num">${res.days === 0 ? "★" : res.days}</div>
-          <div class="lbl">${res.days === 0 ? "Today" : (res.days === 1 ? "Day" : "Days")}</div>
+          <div class="lbl">${res.days === 0 ? L.today : (res.days === 1 ? L.day : L.days)}</div>
         </div>`;
     }
 
@@ -853,17 +972,22 @@
     function goToday() { viewDate = new Date(); selectedDate = new Date(); renderCalendar(); switchTab("calendar"); }
     function jumpToDate(y, m, d) { viewDate = new Date(y, m, 1); selectedDate = new Date(y, m, d); renderCalendar(); switchTab("calendar"); }
 
+    function renderAll() {
+      applyStaticLabels();
+      renderHeader();
+      renderBanner();
+      renderCalendar();
+      renderPanchangTab();
+      renderMuhurat(currentMuhurat);
+      renderPlanets();
+      renderTransits();
+      renderEclipses();
+      renderCountdowns();
+    }
+
     // Boot
     document.getElementById("astroDate").value = new Date().toISOString().slice(0, 10);
-    renderHeader();
-    renderBanner();
-    renderCalendar();
-    renderPanchangTab();
-    renderMuhurat("vivah");
-    renderPlanets();
-    renderTransits();
-    renderEclipses();
-    initCountdowns();
+    renderAll();
   </script>
 </body>
 </html>
