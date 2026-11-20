@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- iOS Standalone App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Panchang">
+  <meta name="theme-color" content="#161618">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <title>Hindu Panchang</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #161618;
+      color: #F2F2F7;
+      margin: 0;
+      padding: calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 20px) 16px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    button {
+      background: #1E1E21;
+      color: #4AE3B5;
+      border: 1px solid #2E2E33;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:active { background: #2E2E33; }
+    h2 { margin: 0; font-size: 16px; letter-spacing: 0.6px; text-transform: uppercase; }
+    .panel { background: #1E1E21; border: 1px solid #2E2E33; border-radius: 14px; padding: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+    .dow { font-size: 10px; font-weight: 700; color: #8E8E93; padding-bottom: 4px; }
+    .day {
+      background: #161618;
+      border-radius: 9px;
+      padding: 8px 2px;
+      cursor: pointer;
+      border: 1px solid #2E2E33;
+    }
+    .day.special { background: #172A24; border-color: #4AE3B555; }
+    .day.today { border-color: #4AE3B5; }
+    .day.selected { background: #4AE3B5; color: #161618; font-weight: 700; border-color: #4AE3B5; }
+    .day .num { font-size: 14px; }
+    .day .t { font-size: 9px; opacity: 0.85; margin-top: 2px; }
+    .card {
+      margin-top: 14px;
+      background: #1E1E21;
+      border: 1px solid #2E2E33;
+      border-radius: 14px;
+      padding: 14px;
+    }
+    .card h3 { margin: 0 0 10px 0; font-size: 15px; color: #4AE3B5; }
+    .row {
+      font-size: 13px;
+      margin: 7px 0;
+      color: #E5E5EA;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #2E2E33;
+      padding-bottom: 6px;
+    }
+    .row:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+    .lbl { color: #8E8E93; }
+    .time { color: #4AE3B5; font-weight: 500; text-align: right; }
+    .today-btn {
+      width: 100%;
+      margin-top: 12px;
+      font-size: 13px;
+      padding: 10px;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button onclick="changeMonth(-1)">‹</button>
+    <h2 id="monthTitle"></h2>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="panel"><div class="grid" id="calGrid"></div></div>
+  <div class="card" id="detailCard"></div>
+  <button class="today-btn" onclick="goToday()">JUMP TO TODAY</button>
+
+  <script>
+    const TITHIS = [
+      "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
+      "Shashthi", "Saptami", "Ashtami", "Navami", "Dashami",
+      "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi", "Purnima",
+      "Pratipada", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
+      "Shashthi", "Saptami", "Ashtami", "Navami", "Dashami",
+      "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi", "Amavasya"
+    ];
+    const TITHI_SHORT = [
+      "S1","S2","S3","S4","S5","S6","S7","S8","S9","S10","EKA","S12","S13","S14","PUR",
+      "K1","K2","K3","K4","K5","K6","K7","K8","K9","K10","EKA","K12","K13","K14","AMA"
+    ];
+    const NAKSHATRAS = [
+      "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
+      "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
+      "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+      "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta",
+      "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
+    ];
+    const MASAS = [
+      "Chaitra", "Vaishakha", "Jyeshtha", "Ashadha", "Shravana", "Bhadrapada",
+      "Ashwin", "Kartika", "Margashirsha", "Pausha", "Magha", "Phalguna"
+    ];
+
+    function toRad(d) { return d * Math.PI / 180; }
+    function norm(d) { return ((d % 360) + 360) % 360; }
+    function getJD(date) { return (date.getTime() / 86400000) + 2440587.5; }
+    function jdToDate(jd) { return new Date((jd - 2440587.5) * 86400000); }
+
+    function getSunLon(jd) {
+      const n = jd - 2451545.0;
+      const L = norm(280.460 + 0.9856474 * n);
+      const g = norm(357.528 + 0.9856003 * n);
+      return norm(L + 1.915 * Math.sin(toRad(g)) + 0.020 * Math.sin(toRad(2 * g)));
+    }
+
+    function getMoonLon(jd) {
+      const d = jd - 2451543.5;
+      const N = norm(125.1228 - 0.0529538083 * d);
+      const w = norm(318.0634 + 0.1643573223 * d);
+      const M = norm(115.3654 + 13.0649929509 * d);
+      const L = norm(N + w + M);
+      const Ms = norm(356.0470 + 0.9856002585 * d);
+      const Ls = norm(282.9404 + 4.70935e-5 * d + Ms);
+      const D = norm(L - Ls);
+      const F = norm(L - N);
+      return norm(
+        L + 6.289 * Math.sin(toRad(M))
+          - 1.274 * Math.sin(toRad(M - 2 * D))
+          + 0.658 * Math.sin(toRad(2 * D))
+          + 0.214 * Math.sin(toRad(2 * M))
+          - 0.186 * Math.sin(toRad(Ms))
+          - 0.114 * Math.sin(toRad(2 * F))
+      );
+    }
+
+    function findTithiTime(jdRef, targetDeg) {
+      let jd = jdRef;
+      for (let i = 0; i < 10; i++) {
+        const diff = norm(getMoonLon(jd) - getSunLon(jd));
+        const err = ((targetDeg - diff + 540) % 360) - 180;
+        jd += err / 12.19075;
+      }
+      return jdToDate(jd);
+    }
+
+    function getPanchang(date, includeTimings = false) {
+      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 6, 0, 0);
+      const jd = getJD(d);
+      const sun = getSunLon(jd);
+      const moon = getMoonLon(jd);
+      const ayanamsa = 23.85 + 0.01396 * (d.getFullYear() - 2000);
+
+      const diff = norm(moon - sun);
+      const tithiIdx = Math.floor(diff / 12);
+      const paksha = tithiIdx < 15 ? "Shukla" : "Krishna";
+      const nakIdx = Math.floor(norm(moon - ayanamsa) / (360 / 27));
+
+      const daysSinceNewMoon = diff / 12.19075;
+      const nmSunSidereal = norm(getSunLon(jd - daysSinceNewMoon) - ayanamsa);
+      const masaIdx = (Math.floor(nmSunSidereal / 30) + 1) % 12;
+
+      const result = {
+        tithi: TITHIS[tithiIdx],
+        shortTithi: TITHI_SHORT[tithiIdx],
+        paksha,
+        nakshatra: NAKSHATRAS[nakIdx],
+        masa: MASAS[masaIdx],
+        isSpecial: [10, 14, 25, 29].includes(tithiIdx)
+      };
+
+      if (includeTimings) {
+        result.tithiStart = findTithiTime(jd, tithiIdx * 12);
+        result.tithiEnd = findTithiTime(jd, ((tithiIdx + 1) * 12) % 360);
+      }
+      return result;
+    }
+
+    let viewDate = new Date();
+    let selectedDate = new Date();
+
+    function fmtDT(dt) {
+      return dt.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) + ", " +
+             dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true });
+    }
+
+    function render() {
+      const y = viewDate.getFullYear(), m = viewDate.getMonth();
+      document.getElementById("monthTitle").innerText = viewDate.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+      const grid = document.getElementById("calGrid");
+      grid.innerHTML = ["SUN","MON","TUE","WED","THU","FRI","SAT"].map(d => '<div class="dow">'+d+'</div>').join("");
+
+      const firstDay = new Date(y, m, 1).getDay();
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const todayStr = new Date().toDateString();
+      const selStr = selectedDate.toDateString();
+
+      for (let i = 0; i < firstDay; i++) grid.innerHTML += '<div></div>';
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dt = new Date(y, m, d);
+        const p = getPanchang(dt, false);
+        let cls = "day";
+        if (p.isSpecial) cls += " special";
+        if (dt.toDateString() === todayStr) cls += " today";
+        if (dt.toDateString() === selStr) cls += " selected";
+        grid.innerHTML += `<div class="${cls}" onclick="selectDay(${y},${m},${d})">
+          <div class="num">${d}</div>
+          <div class="t">${p.shortTithi}</div>
+        </div>`;
+      }
+      renderDetails();
+    }
+
+    function selectDay(y, m, d) { selectedDate = new Date(y, m, d); render(); }
+    function changeMonth(delta) { viewDate.setMonth(viewDate.getMonth() + delta); render(); }
+    function goToday() { viewDate = new Date(); selectedDate = new Date(); render(); }
+
+    function renderDetails() {
+      const p = getPanchang(selectedDate, true);
+      document.getElementById("detailCard").innerHTML = `
+        <h3>${selectedDate.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</h3>
+        <div class="row"><span class="lbl">Masa</span><span>${p.masa}</span></div>
+        <div class="row"><span class="lbl">Paksha</span><span>${p.paksha} Paksha</span></div>
+        <div class="row"><span class="lbl">Tithi</span><span>${p.tithi}</span></div>
+        <div class="row"><span class="lbl">Starts</span><span class="time">${fmtDT(p.tithiStart)}</span></div>
+        <div class="row"><span class="lbl">Ends</span><span class="time">${fmtDT(p.tithiEnd)}</span></div>
+        <div class="row"><span class="lbl">Nakshatra</span><span>${p.nakshatra}</span></div>
+      `;
+    }
+
+    render();
+  </script>
+</body>
+</html>
