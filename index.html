@@ -1,3 +1,5 @@
+Here is the complete index.html with dynamic current location and dual 6 AM / 6 PM Tithi support integrated.
+Open [https://github.com/abhishekjha-id/Panchang/edit/main/index.html](https://github.com/abhishekjha-id/Panchang/edit/main/index.html), replace everything with the code below, and commit.
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -842,8 +844,21 @@
         : `${I18N.en[p.pakshaKey]} ${TITHIS.en[p.tithiIdx]} in ${MASAS.en[p.masaIdx]} Masa under ${NAKSHATRAS.en[p.nakIdx]} Nakshatra—suitable for routine spiritual practice and daily duties.`;
     }
 
-    // --- Astronomical Core ---
-    const LAT = 12.9716, LON = 77.5946;
+    // --- Astronomical Core (Auto Location with Bengaluru Fallback) ---
+    let LAT = parseFloat(localStorage.getItem("panchang_lat")) || 12.9716;
+    let LON = parseFloat(localStorage.getItem("panchang_lon")) || 77.5946;
+
+    function initLocation() {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(pos => {
+        LAT = pos.coords.latitude;
+        LON = pos.coords.longitude;
+        localStorage.setItem("panchang_lat", LAT);
+        localStorage.setItem("panchang_lon", LON);
+        renderAll();
+      }, () => {}, { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 });
+    }
+
     function toRad(d) { return d * Math.PI / 180; }
     function toDeg(r) { return r * 180 / Math.PI; }
     function norm(d) { return ((d % 360) + 360) % 360; }
@@ -939,7 +954,7 @@
       const decl = toRad(23.45 * Math.sin(B));
       const cosH = (Math.cos(toRad(90.833)) - Math.sin(toRad(LAT)) * Math.sin(decl)) / (Math.cos(toRad(LAT)) * Math.cos(decl));
       const H = toDeg(Math.acos(Math.max(-1, Math.min(1, cosH)))) * 4;
-      const solarNoonMin = 720 - 4 * LON - eot + 330;
+      const solarNoonMin = 720 - 4 * LON - eot - date.getTimezoneOffset();
       const mk = (mins) => { const dt = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0); dt.setMinutes(Math.round(mins)); return dt; };
       const sr = mk(solarNoonMin - H), ss = mk(solarNoonMin + H);
       const seg = (ss - sr) / 8, dow = date.getDay();
@@ -995,17 +1010,29 @@
 
       const illum = Math.round(((1 - Math.cos(toRad(diff))) / 2) * 100);
       const rituIdx = Math.floor(masaIdx / 2);
-      const ayanaIdx = (sunSid >= 270 || sunSid < 90) ? 0 : 1; // Makara to Mithuna = Uttarayana
+      const ayanaIdx = (sunSid >= 270 || sunSid < 90) ? 0 : 1;
+
+      const jd6AM = getJD(new Date(date.getFullYear(), date.getMonth(), date.getDate(), 6, 0, 0));
+      const jd6PM = getJD(new Date(date.getFullYear(), date.getMonth(), date.getDate(), 18, 0, 0));
+      const tithiAM = Math.floor(norm(getMoonLon(jd6AM) - getSunLon(jd6AM)) / 12);
+      const tithiPM = Math.floor(norm(getMoonLon(jd6PM) - getSunLon(jd6PM)) / 12);
+      const hasDualTithi = tithiAM !== tithiPM;
 
       const res = {
-        jd, dow: d.getDay(), tithiIdx, pakshaKey, nakIdx, yogaIdx, karanaKey: getKaranaKey(diff),
+        jd, dow: d.getDay(), tithiIdx, tithiAM, tithiPM, hasDualTithi, pakshaKey, nakIdx, yogaIdx, karanaKey: getKaranaKey(diff),
         masaIdx, masaNum: masaIdx + 1, sunRashiIdx, moonRashiIdx, rituIdx, ayanaIdx,
         vikramSamvat, shakaSamvat, illum, festKey,
-        isSpecial: Boolean(festKey) || [10, 14, 25, 29].includes(tithiIdx)
+        isSpecial: Boolean(festKey) || [10, 14, 25, 29].includes(tithiIdx) || [10, 14, 25, 29].includes(tithiPM)
       };
       if (includeExtras) {
         res.tithiStart = findTithiTime(jd, tithiIdx * 12);
         res.tithiEnd = findTithiTime(jd, ((tithiIdx + 1) * 12) % 360);
+        if (hasDualTithi) {
+          res.tithiAMStart = findTithiTime(jd6AM, tithiAM * 12);
+          res.tithiAMEnd = findTithiTime(jd6AM, ((tithiAM + 1) * 12) % 360);
+          res.tithiPMStart = findTithiTime(jd6PM, tithiPM * 12);
+          res.tithiPMEnd = findTithiTime(jd6PM, ((tithiPM + 1) * 12) % 360);
+        }
         res.sunTimes = getSunTimes(d);
       }
       return res;
@@ -1331,7 +1358,7 @@
         grid.innerHTML += `
           <div class="${cls}" onclick="selectDay(${y},${m},${d})">
             <div class="num">${d}</div>
-            <div class="t">${TITHI_SHORT[lang][p.tithiIdx]}</div>
+            <div class="t" style="${p.hasDualTithi ? 'font-size:7.5px;' : ''}">${p.hasDualTithi ? `${TITHI_SHORT[lang][p.tithiAM]}/${TITHI_SHORT[lang][p.tithiPM]}` : TITHI_SHORT[lang][p.tithiIdx]}</div>
             <div class="dots"><span class="dot-p ${p.pakshaKey==='shukla'?'dot-shukla':'dot-krishna'}"></span>${p.festKey?'<span class="dot-fest"></span>':''}</div>
           </div>`;
       }
@@ -1347,9 +1374,16 @@
         </div>
         <div class="row"><span class="lbl">${L.hinduMonth}</span><span class="val">${MASAS[lang][p.masaIdx]} (${L.month} ${p.masaNum})</span></div>
         <div class="row"><span class="lbl">${L.hinduYear}</span><span class="val">${L.vs} ${p.vikramSamvat} • ${L.shaka} ${p.shakaSamvat}</span></div>
-        <div class="row"><span class="lbl">${L.tithi}</span><span class="val">${L[p.pakshaKey]} ${TITHIS[lang][p.tithiIdx]}</span></div>
-        <div class="row"><span class="lbl">${L.tithiStart}</span><span class="val mint">${fmtDT(p.tithiStart)}</span></div>
-        <div class="row"><span class="lbl">${L.tithiEnd}</span><span class="val mint">${fmtDT(p.tithiEnd)}</span></div>
+        ${p.hasDualTithi ? `
+          <div class="row"><span class="lbl">${L.tithi} (6 AM)</span><span class="val">${L[p.tithiAM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiAM]}</span></div>
+          <div class="row"><span class="lbl">${L.tithiStart} – ${L.tithiEnd}</span><span class="val mint">${fmtDT(p.tithiAMStart)} → ${fmtDT(p.tithiAMEnd)}</span></div>
+          <div class="row"><span class="lbl">${L.tithi} (6 PM)</span><span class="val">${L[p.tithiPM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiPM]}</span></div>
+          <div class="row"><span class="lbl">${L.tithiStart} – ${L.tithiEnd}</span><span class="val mint">${fmtDT(p.tithiPMStart)} → ${fmtDT(p.tithiPMEnd)}</span></div>
+        ` : `
+          <div class="row"><span class="lbl">${L.tithi}</span><span class="val">${L[p.pakshaKey]} ${TITHIS[lang][p.tithiIdx]}</span></div>
+          <div class="row"><span class="lbl">${L.tithiStart}</span><span class="val mint">${fmtDT(p.tithiStart)}</span></div>
+          <div class="row"><span class="lbl">${L.tithiEnd}</span><span class="val mint">${fmtDT(p.tithiEnd)}</span></div>
+        `}
         <div class="row"><span class="lbl">${L.nakshatra}</span><span class="val">${NAKSHATRAS[lang][p.nakIdx]}</span></div>
         <div class="row"><span class="lbl">${L.yogaKarana}</span><span class="val">${YOGAS[lang][p.yogaIdx]} • ${getKaranaName(p.karanaKey)}</span></div>
         <div class="row"><span class="lbl">${L.sunRiseSet}</span><span class="val">${fmtTime(st.sunrise)} • ${fmtTime(st.sunset)}</span></div>
@@ -1479,6 +1513,7 @@
     // Boot
     resetAstroDate();
     renderAll();
+    initLocation();
   </script>
 </body>
 </html>
