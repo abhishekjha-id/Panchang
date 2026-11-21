@@ -35,14 +35,37 @@
       color: var(--text);
       margin: 0;
       min-height: 100vh;
-      padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 84px) 16px;
+      padding: calc(env(safe-area-inset-top) + 28px) 16px calc(env(safe-area-inset-bottom) + 84px) 16px;
       user-select: none;
       -webkit-user-select: none;
       overflow-x: hidden;
     }
 
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 8px; }
-    .app-title { font-size: 19px; font-weight: 700; letter-spacing: -0.3px; }
+    /* Crisp solid cover behind iOS status bar */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: calc(env(safe-area-inset-top) + 8px);
+      background: linear-gradient(180deg, #121214 75%, rgba(18,18,20,0) 100%);
+      z-index: 90;
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding: 10px 12px;
+      gap: 8px;
+      background: radial-gradient(circle at 12% 50%, rgba(74, 227, 181, 0.14), rgba(28, 28, 31, 0.85) 65%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon { width: 34px; height: 34px; flex-shrink: 0; filter: drop-shadow(0 0 6px rgba(74, 227, 181, 0.45)); }
+    .app-title { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
     .app-sub { font-size: 10.5px; color: var(--mint); font-weight: 600; margin-top: 2px; letter-spacing: 0.2px; }
     .top-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
     .pill-btn {
@@ -190,7 +213,6 @@
       border-radius: 10px; padding: 5px 9px; font-size: 11px; font-weight: 700; white-space: nowrap; text-align: right;
     }
 
-    /* Expandable Muhurat / Vidhi */
     .exp-wrap { border-bottom: 1px solid var(--border); padding: 10px 0; }
     .exp-wrap:last-child { border-bottom: none; padding-bottom: 0; }
     .exp-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; }
@@ -205,7 +227,6 @@
       font-size: 11px; font-weight: 700; cursor: pointer;
     }
 
-    /* Segmented Toggle for Puja Tab */
     .seg-bar {
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
       background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 12px;
@@ -242,9 +263,17 @@
 <body>
 
   <div class="topbar">
-    <div>
-      <div class="app-title" id="topTitle">Mithila Calendar</div>
-      <div class="app-sub" id="topSub"></div>
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="29" stroke="#4AE3B5" stroke-opacity="0.25" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <circle cx="32" cy="32" r="22" stroke="#4AE3B5" stroke-opacity="0.45" stroke-width="1"/>
+        <path d="M32 6L35 16L44 10L41 20L52 19L45 27L56 32L45 37L52 45L41 44L44 54L35 48L32 58L29 48L20 54L23 44L12 45L19 37L8 32L19 27L12 19L23 20L20 10L29 16Z" fill="#4AE3B5" fill-opacity="0.22" stroke="#4AE3B5" stroke-width="1.3"/>
+        <circle cx="32" cy="32" r="10.5" fill="#4AE3B5"/>
+      </svg>
+      <div>
+        <div class="app-title" id="topTitle">Mithila Calendar</div>
+        <div class="app-sub" id="topSub"></div>
+      </div>
     </div>
     <div class="top-actions">
       <button class="lang-btn" id="langBtn" onclick="toggleLang()">हिं</button>
@@ -275,6 +304,7 @@
     <div class="mini-grid" id="panchangGrid"></div>
     <div class="card" id="panchangTimings"></div>
     <div class="card" id="panchangKaal"></div>
+    <div class="card" id="panchangExtra"></div>
   </div>
 
   <!-- TAB 3: MAITHIL MUHURAT -->
@@ -324,7 +354,7 @@
   <!-- TAB 6: MANTRA & PUJA VIDHI -->
   <div id="view-puja" class="view">
     <div class="seg-bar">
-      <div class="seg-btn active" id="seg-mantra" onclick="switchPujaMode('mantra')">मन्त्राः (Mantra)</div>
+      <div class="seg-btn active" id="seg-mantra" onclick="switchPujaMode('mantra')">मन्त्राः (Sanskrit)</div>
       <div class="seg-btn" id="seg-vidhi" onclick="switchPujaMode('vidhi')">Maithil Puja Vidhi</div>
     </div>
     <div id="pujaContent"></div>
@@ -374,7 +404,9 @@
         nakshatra: "Nakshatra", yogaKarana: "Yoga / Karana", sunRiseSet: "Sunrise / Sunset", rahuKaal: "Rahu Kaal",
         whyMatters: "Why This Day Matters", moonPhase: "Moon Phase", lit: "Lit", yoga: "Yoga", karana: "Karana",
         tithiSunTimings: "Tithi & Sun Timings", sunrise: "Sunrise", sunset: "Sunset",
-        muhuratKaal: "Muhurat & Kaal", abhijit: "Abhijit Muhurat", yamaganda: "Yamaganda",
+        muhuratKaal: "Muhurat & Kaal", brahma: "Brahma Muhurat", abhijit: "Abhijit Muhurat", pradosh: "Pradosh Kaal",
+        gulika: "Gulika Kaal", yamaganda: "Yamaganda",
+        panchangExtra: "Ritu, Ayana & Disha Shool", ritu: "Ritu (Season)", ayana: "Ayana", dishaShool: "Disha Shool",
         secMuhurat: "Maithil Brahmin Muhurat Finder (Next 90 Days)",
         muhuratNote: "Tap any date to see why it is suitable. Filters by Mithila Panchang rules: excludes Kharmas, Chaturmas, Pitru Paksha, Rikta Tithis, Amavasya, and approx. Guru/Shukra Asta.",
         noMuhurat: "No strict dates in the next 90 days (likely Kharmas, Chaturmas, or Guru/Shukra Asta).",
@@ -391,7 +423,10 @@
         gDaysShort: ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],
         muhuratCats: { vivah:"Vivah", griha:"Griha Pravesh", vehicle:"Vehicle", namkaran:"Namkaran", business:"Business" },
         quickChips: ["Ekadashi","Purnima","Amavasya","Sankashti","Pradosh"],
-        segMantra: "मन्त्राः (Sanskrit)", segVidhi: "Maithil Puja Vidhi"
+        segMantra: "मन्त्राः (Sanskrit)", segVidhi: "Maithil Puja Vidhi",
+        ritus: ["Vasanta (Spring)","Grishma (Summer)","Varsha (Monsoon)","Sharad (Autumn)","Hemanta (Pre-Winter)","Shishira (Winter)"],
+        ayanas: ["Uttarayana","Dakshinayana"],
+        dishas: ["West","East","North","North","South","West","East"]
       },
       hi: {
         titles: { calendar:"मिथिला कैलेंडर", panchang:"आज का पंचांग", muhurat:"मैथिल मुहूर्त", astro:"खगोल व ग्रह", countdown:"तिथि व पर्व", puja:"मंत्र एवं पूजा विधि" },
@@ -402,7 +437,9 @@
         nakshatra: "नक्षत्र", yogaKarana: "योग / करण", sunRiseSet: "सूर्योदय / सूर्यास्त", rahuKaal: "राहु काल",
         whyMatters: "आज का महत्व", moonPhase: "चंद्र कला", lit: "प्रकाशित", yoga: "योग", karana: "करण",
         tithiSunTimings: "तिथि एवं सूर्य समय", sunrise: "सूर्योदय", sunset: "सूर्यास्त",
-        muhuratKaal: "मुहूर्त एवं काल", abhijit: "अभिजित मुहूर्त", yamaganda: "यमगण्ड",
+        muhuratKaal: "मुहूर्त एवं काल", brahma: "ब्रह्म मुहूर्त", abhijit: "अभिजित मुहूर्त", pradosh: "प्रदोष काल",
+        gulika: "गुलिक काल", yamaganda: "यमगण्ड",
+        panchangExtra: "ऋतु, अयन एवं दिशाशूल", ritu: "ऋतु", ayana: "अयन", dishaShool: "दिशाशूल",
         secMuhurat: "मैथिल ब्राह्मण मुहूर्त (अगले 90 दिन)",
         muhuratNote: "कारण देखने के लिए किसी भी तिथि पर टैप करें। मिथिला पंचांग के अनुसार खरमास, चातुर्मास, पितृपक्ष, रिक्ता तिथि व गुरु/शुक्र अस्त को हटाया गया है।",
         noMuhurat: "अगले 90 दिनों में कोई शुभ तिथि नहीं (संभवतः खरमास, चातुर्मास या गुरु/शुक्र अस्त)।",
@@ -419,7 +456,10 @@
         gDaysShort: ["रवि","सोम","मंगल","बुध","गुरु","शुक्र","शनि"],
         muhuratCats: { vivah:"विवाह", griha:"गृह प्रवेश", vehicle:"वाहन क्रय", namkaran:"नामकरण", business:"व्यापार" },
         quickChips: ["एकादशी","पूर्णिमा","अमावस्या","संकष्टी","प्रदोष"],
-        segMantra: "मन्त्राः (संस्कृत)", segVidhi: "मैथिल पूजा विधि"
+        segMantra: "मन्त्राः (संस्कृत)", segVidhi: "मैथिल पूजा विधि",
+        ritus: ["वसंत","ग्रीष्म","वर्षा","शरद","हेमंत","शिशिर"],
+        ayanas: ["उत्तरायण","दक्षिणायन"],
+        dishas: ["पश्चिम","पूर्व","उत्तर","उत्तर","दक्षिण","पश्चिम","पूर्व"]
       }
     };
 
@@ -460,6 +500,10 @@
       en: ["Mesha","Vrishabha","Mithuna","Karka","Simha","Kanya","Tula","Vrishchika","Dhanu","Makara","Kumbha","Meena"],
       hi: ["मेष","वृषभ","मिथुन","कर्क","सिंह","कन्या","तुला","वृश्चिक","धनु","मकर","कुंभ","मीन"]
     };
+    const WESTERN = {
+      en: ["Aries","Taurus","Gemini","Cancer","Leo","Virgo","Libra","Scorpio","Sagittarius","Capricorn","Aquarius","Pisces"],
+      hi: ["मेष","वृषभ","मिथुन","कर्क","सिंह","कन्या","तुला","वृश्चिक","धनु","मकर","कुंभ","मीन"]
+    };
     const PLANET_HI = { Sun:"सूर्य", Moon:"चंद्र", Mars:"मंगल", Mercury:"बुध", Jupiter:"गुरु", Venus:"शुक्र", Saturn:"शनि", Rahu:"राहु", Ketu:"केतु" };
 
     const LUNAR_FESTIVALS = {
@@ -468,6 +512,7 @@
       "0-14": { en:"Hanuman Jayanti", hi:"हनुमान जयंती" },
       "1-2":  { en:"Akshaya Tritiya", hi:"अक्षय तृतीया" },
       "1-14": { en:"Buddha Purnima", hi:"बुद्ध पूर्णिमा" },
+      "2-29": { en:"Vat Savitri (Barasait)", hi:"वट सावित्री (बरसाइत)" },
       "3-10": { en:"Devshayani Ekadashi", hi:"देवशयनी एकादशी" },
       "3-14": { en:"Guru Purnima", hi:"गुरु पूर्णिमा" },
       "4-4":  { en:"Nag Panchami", hi:"नाग पंचमी" },
@@ -475,6 +520,7 @@
       "4-22": { en:"Krishna Janmashtami", hi:"कृष्ण जन्माष्टमी" },
       "5-3":  { en:"Chaurchan / Ganesh Chaturthi", hi:"चौरचन / गणेश चतुर्थी" },
       "5-13": { en:"Anant Chaturdashi", hi:"अनंत चतुर्दशी" },
+      "5-22": { en:"Jitiya Vrat", hi:"जितिया व्रत" },
       "5-29": { en:"Mahalaya Amavasya", hi:"महालया अमावस्या" },
       "6-0":  { en:"Sharad Navratri Begins", hi:"शारदीय नवरात्रि प्रारंभ" },
       "6-7":  { en:"Durga Ashtami", hi:"दुर्गा अष्टमी" },
@@ -494,16 +540,17 @@
     const EXPLAINERS = {
       "7-10": { en:"Marks Lord Vishnu's awakening from Chaturmas, reopening the auspicious season for weddings and Griha Pravesh.", hi:"चातुर्मास के बाद भगवान विष्णु के जागने का दिन; इसी दिन से विवाह व गृह प्रवेश जैसे मांगलिक कार्य पुनः प्रारंभ होते हैं।" },
       "7-14": { en:"Celebrated as Dev Deepawali; highly meritorious for sacred river baths, lighting diyas, and charity.", hi:"देव दीपावली; पवित्र स्नान, दीपदान और दान-पुण्य के लिए अत्यंत शुभ।" },
-      "7-5":  { en:"Main day of Chhath Mahaparva in Mithila—devotees offer Sandhya Arghya to the setting Sun (Surya Dev) and Chhathi Maiya.", hi:"मिथिला के महापर्व छठ का मुख्य दिन—अस्ताचलगामी सूर्य देव एवं छठी मैया को संध्या अर्घ्य अर्पित किया जाता है।" },
+      "7-5":  { en:"Main day of Chhath Mahaparva in Mithila—devotees offer Sandhya Arghya to the setting Sun and Chhathi Maiya.", hi:"मिथिला के महापर्व छठ का मुख्य दिन—अस्ताचलगामी सूर्य देव एवं छठी मैया को संध्या अर्घ्य अर्पित किया जाता है।" },
       "6-14": { en:"Kojagara Purnima in Mithila—night vigil worshipping Goddess Lakshmi with Makhana, Paan, and Supari distribution.", hi:"मिथिला का प्रसिद्ध कोजागरा पर्व—रात्रि में माँ लक्ष्मी की पूजा तथा मखाना, पान व सुपारी वितरण।" },
       "5-3":  { en:"Observed as Chaurchan (Chauth Chandra) in Mithila—evening worship of the Moon with dahi, fruits, and Aripan.", hi:"मिथिला में चौरचन (चौथ चंद्र) के रूप में प्रसिद्ध—संध्या समय अरिपन बनाकर दही व फल के साथ चंद्रमा को अर्घ्य।" },
+      "5-22": { en:"Jitiya (Jivitputrika) Vrat—observed by mothers in Mithila with a strict Nirjala fast for the longevity of their children.", hi:"जितिया (जीवित्पुत्रिका) व्रत—संतान की दीर्घायु एवं सुख-समृद्धि हेतु माताओं द्वारा निर्जला उपवास।" },
       "10-28":{ en:"The Great Night of Shiva—observed with night-long vigil (Jagaran), fasting, and Bilva leaf offerings.", hi:"भगवान शिव की महान रात्रि—रात्रि जागरण, उपवास और बेलपत्र अर्पण के साथ मनाई जाती है।" },
       "11-14":{ en:"Commemorates the triumph of devotion over ego and welcomes spring.", hi:"अहंकार पर भक्ति की विजय और वसंत ऋतु के स्वागत का पर्व।" },
       "makar":{ en:"Marks the Sun's transition into Makara (Capricorn) and the start of Uttarayana.", hi:"सूर्य के मकर राशि में प्रवेश और शुभ उत्तरायण काल के प्रारंभ का पर्व।" },
       "0-0":  { en:"Marks the Hindu Lunar New Year (Chaitra Shukla Pratipada) and the start of Chaitra Navratri.", hi:"हिन्दू नववर्ष (चैत्र शुक्ल प्रतिपदा) और चैत्र नवरात्रि के प्रारंभ का दिन।" }
     };
 
-    // --- Strictly Sanskrit Mantras ---
+    // --- 18 Strictly Sanskrit Mantras ---
     const SANSKRIT_MANTRAS = [
       { title: "श्री गणेश वन्दना", text: "वक्रतुण्ड महाकाय सूर्यकोटि समप्रभ।\nनिर्विघ्नं कुरु मे देव सर्वकार्येषु सर्वदा॥" },
       { title: "गायत्री मन्त्रः", text: "ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं\nभर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्॥" },
@@ -511,18 +558,28 @@
       { title: "सूर्य अर्घ्य मन्त्रः", text: "एहि सूर्य सहस्रांशो तेजोराशे जगत्पते।\nअनुकम्पय मां भक्त्या गृहाणार्घ्यं दिवाकर॥" },
       { title: "भगवती दुर्गा मन्त्रः", text: "सर्वमङ्गलमाङ्गल्ये शिवे सर्वार्थसाधिके।\nशरण्ये त्र्यम्बके गौरि नारायणि नमोऽस्तु ते॥" },
       { title: "श्री विष्णु मन्त्रः", text: "शान्ताकारं भुजगशयनं पद्मनाभं सुरेशं\nविश्वाधारं गगनसदृशं मेघवर्णं शुभाङ्गम्।\nलक्ष्मीकान्तं कमलनयनं योगिभिर्ध्यानगम्यं\nवन्दे विष्णुं भवभयहरं सर्वलोकैकनाथम्॥" },
+      { title: "श्री हनुमान वन्दना", text: "मनोजवं मारुततुल्यवेगं जितेन्द्रियं बुद्धिमतां वरिष्ठम्।\nवातात्मजं वानरयूथमुख्यं श्रीरामदूतं शरणं प्रपद्ये॥" },
+      { title: "श्री लक्ष्मी मन्त्रः", text: "ॐ श्रीं ह्रीं श्रीं कमले कमलालये प्रसीद प्रसीद।\nॐ श्रीं ह्रीं श्रीं महालक्ष्म्यै नमः॥" },
+      { title: "श्री सरस्वती वन्दना", text: "या कुन्देन्दुतुषारहारधवला या शुभ्रवस्त्रावृता\nया वीणावरदण्डमण्डितकरा या श्वेतपद्मासना।\nया ब्रह्माच्युतशङ्करप्रभृतिभिर्देवैः सदा वन्दिता\nसा मां पातु सरस्वती भगवती निःशेषजाड्यापहा॥" },
+      { title: "श्री शिव ध्यानम्", text: "कर्पूरगौरं करुणावतारं संसारसारं भुजगेन्द्रहारम्।\nसदा वसन्तं हृदयारविन्दे भवं भवानीसहितं नमामि॥" },
+      { title: "गुरु वन्दना", text: "गुरुर्ब्रह्मा गुरुर्विष्णुः गुरुर्देवो महेश्वरः।\nगुरुः साक्षात् परब्रह्म तस्मै श्रीगुरवे नमः॥" },
+      { title: "नवग्रह शान्ति मन्त्रः", text: "ब्रह्मा मुरारिस्त्रिपुरान्तकारी भानुः शशी भूमिसुतो बुधश्च।\nगुरुश्च शुक्रः शनिराहुकेतवः सर्वे ग्रहाः शान्तिकरा भवन्तु॥" },
+      { title: "श्री कृष्ण वन्दना", text: "वसुदेवसुतं देवं कंसचाणूरमर्दनम्।\nदेवकीपरमानन्दं कृष्णं वन्दे जगद्गुरुम्॥" },
+      { title: "दीप प्रज्वलन मन्त्रः", text: "शुभं करोति कल्याणमारोग्यं धनसम्पदा।\nशत्रुबुद्धिविनाशाय दीपज्योतिर्नमोऽस्तु ते॥" },
+      { title: "तुलसी प्रणाम मन्त्रः", text: "वृन्दायै तुलसीदेव्यै प्रियायै केशवस्य च।\nविष्णुभक्तिप्रदे देवि सत्यवत्यै नमो नमः॥" },
       { title: "पवित्रता / आचमन मन्त्रः", text: "ॐ अपवित्रः पवित्रो वा सर्वावस्थां गतोऽपि वा।\nयः स्मरेत् पुण्डरीकाक्षं स बाह्याभ्यन्तरः शुचिः॥" },
+      { title: "क्षमा प्रार्थना", text: "आवाहनं न जानामि न जानामि विसर्जनम्।\nपूजां चैव न जानामि क्षमस्व परमेश्वर॥" },
       { title: "शान्ति पाठः", text: "ॐ सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः।\nसर्वे भद्राणि पश्यन्तु मा कश्चिद्दुःखभाग्भवेत्॥\nॐ शान्तिः शान्तिः शान्तिः॥" }
     ];
 
-    // --- Maithil Puja Vidhi ---
+    // --- 15 Maithil & Hindu Puja Vidhis ---
     const MAITHIL_VIDHIS = [
       {
         enTitle: "Nitya Dev Puja (Mithila Parampara)", hiTitle: "नित्य देव पूजा (मिथिला परंपरा)",
         enSub: "Daily Gosain Ghar worship", hiSub: "दैनिक गोसाउन घर पूजा",
         enSteps: [
           "Snan & Shuddhi: Bathe, wear clean clothes, and apply Tilak (Chandan/Bhasma).",
-          "Aachaman & Pavitrikaran: Sip water 3 times from the right palm reciting 'Om Keshavaya/Narayanaya/Madhavaya Namah' and sprinkle water around.",
+          "Aachaman & Pavitrikaran: Sip water 3 times from the right palm and sprinkle water around.",
           "Deep Prajwalan: Light a ghee or sesame oil diya facing East or North.",
           "Panchadevata Puja: Offer water, Chandan, Akshat, Pushpa, and Naivedya to Ganesh, Shiva, Vishnu, Surya, and Maa Bhagwati (Gosain).",
           "Surya Arghya & Aarti: Offer water to the Sun in a copper vessel, perform Aarti, and recite Kshama Prarthana."
@@ -537,12 +594,12 @@
       },
       {
         enTitle: "Chaurchan (Chauth Chandra)", hiTitle: "चौरचन (चौथ चंद्र पूजा)",
-        enSub: "Bhadrapada Shukla Chaturthi", hiSub: "भाद्रपद शुक्ल चतुर्थी",
+        enSub: "Bhadrapada Shukla Chaturthi (Mithila)", hiSub: "भाद्रपद शुक्ल चतुर्थी (मिथिला)",
         enSteps: [
           "Fasting & Preparation: Observe a day-long fast; prepare Kheer, Puri, Pidakia, and fresh curd (Dahi) in earthen pots (Kuriya).",
           "Aripan: Draw traditional Maithil Aripan (rice-paste floor art) in the courtyard facing the Moon.",
           "Offering Setup: Place the earthen curd pot, fruits (banana, cucumber, apple), and sweets on the Aripan.",
-          "Chandra Arghya: At moonrise, hold a fruit or curd pot in both hands, look at the Moon, and offer Arghya reciting the Chauth Chandra mantra to ward off false blame (Mithya Kalank).",
+          "Chandra Arghya: At moonrise, hold a fruit or curd pot in both hands, look at the Moon, and offer Arghya to ward off false blame (Mithya Kalank).",
           "Prasad: Distribute Dahi, fruits, and Pidakia among family members."
         ],
         hiSteps: [
@@ -558,7 +615,7 @@
         enSub: "Kartika Shukla Chaturthi to Saptami", hiSub: "कार्तिक शुक्ल चतुर्थी से सप्तमी",
         enSteps: [
           "Day 1 (Nahay Khay): Holy bath, cleaning the house, and eating pure Lauki-Bhat cooked with rock salt (Sendha Namak).",
-          "Day 2 (Kharna): Day-long fast broken after sunset with Gur-Kheer and Roti after offering to Chhathi Maiya; 36-hour Nirjala fast begins.",
+          "Day 2 (Kharna): Day-long fast broken after sunset with Gur-Kheer and Roti; 36-hour Nirjala fast begins.",
           "Day 3 (Sandhya Arghya): Prepare Thekua and fill bamboo Soop/Daura with fruits, sugarcane, and ginger. Offer Arghya to the setting Sun standing in water.",
           "Day 4 (Usha Arghya): Offer Arghya to the rising Sun at dawn, recite Chhath Katha, distribute Thekua Prasad, and break the fast (Paran)."
         ],
@@ -570,13 +627,13 @@
         ]
       },
       {
-        enTitle: "Kojagara (Sharad Purnima Lakshmi Puja)", hiTitle: "कोजागरा (शरद पूर्णिमा लक्ष्मी पूजा)",
-        enSub: "Ashwin Shukla Purnima", hiSub: "आश्विन शुक्ल पूर्णिमा",
+        enTitle: "Kojagara (Sharad Purnima)", hiTitle: "कोजागरा (शरद पूर्णिमा लक्ष्मी पूजा)",
+        enSub: "Ashwin Shukla Purnima (Mithila)", hiSub: "आश्विन शुक्ल पूर्णिमा (मिथिला)",
         enSteps: [
           "Aripan & Kalash: Draw Ashtadal Kamal Aripan in the evening and establish a Kalash.",
-          "Lakshmi Puja: Worship Goddess Lakshmi and Lord Indra at night with lotus/white flowers, Makhana, Paan, Supari, and Batasha.",
-          "Jagaran: Stay awake during the night ('Ko Jagarti' — Who is awake?), traditionally playing Pachisi/Chausar.",
-          "Chumavan & Distribution: In newlywed Maithil households, perform Chumavan of the groom and distribute Makhana, Paan, and Supari to elders and neighbors."
+          "Lakshmi Puja: Worship Goddess Lakshmi and Lord Indra at night with white flowers, Makhana, Paan, Supari, and Batasha.",
+          "Jagaran: Stay awake during the night ('Ko Jagarti'), traditionally playing Pachisi.",
+          "Chumavan & Distribution: In newlywed Maithil households, perform Chumavan of the groom and distribute Makhana, Paan, and Supari."
         ],
         hiSteps: [
           "अरिपन व कलश: संध्या समय अष्टदल कमल अरिपन बनाकर कलश स्थापित करें।",
@@ -586,19 +643,179 @@
         ]
       },
       {
+        enTitle: "Jitiya Vrat (Jivitputrika)", hiTitle: "जितिया व्रत (जीवित्पुत्रिका)",
+        enSub: "Ashwin Krishna Ashtami (Mithila)", hiSub: "आश्विन कृष्ण अष्टमी (मिथिला)",
+        enSteps: [
+          "Nahay Khay & Ongthan: Bathe and eat Marua (ragi) roti and Noni saag; eat Ongthan (pre-dawn meal) before sunrise on Ashtami.",
+          "Nirjala Fast: Mothers observe a strict 24-hour waterless fast for their children's well-being.",
+          "Jimutavahana Puja: Worship King Jimutavahana, Chillo, and Siyaro with Kusha grass, flowers, and recite the Jitiya Katha.",
+          "Paran: Break the fast on Navami morning after offering water to Surya Dev."
+        ],
+        hiSteps: [
+          "नहाय खाय व ओठगन: स्नान कर मड़ुआ की रोटी व नोनी का साग खाएं; अष्टमी के सूर्योदय से पूर्व ओठगन करें।",
+          "निर्जला उपवास: माताएं संतान की दीर्घायु हेतु 24 घंटे का कठोर निर्जला व्रत रखती हैं।",
+          "जीमूतवाहन पूजा: कुश से बने जीमूतवाहन, चिल्हो और सियारो की पूजा कर जितिया कथा सुनें।",
+          "पारण: नवमी प्रातः सूर्य देव को अर्घ्य देकर पारण करें।"
+        ]
+      },
+      {
+        enTitle: "Vat Savitri (Barasait)", hiTitle: "वट सावित्री (बरसाइत)",
+        enSub: "Jyeshtha Amavasya (Mithila)", hiSub: "ज्येष्ठ अमावस्या (मिथिला)",
+        enSteps: [
+          "Preparation: Married women dress in new attire with sindoor and prepare a bamboo hand-fan (Bena), soaked gram, mango, and litchi.",
+          "Banyan Tree Puja: Tie raw cotton thread (Kachcha Soot) around the Vat (Banyan) tree while circumambulating 7 times.",
+          "Katha: Listen to the Savitri-Satyavan Katha under the tree and offer seasonal fruits.",
+          "Blessings: Fan the husband with the bamboo Bena and seek elders' blessings."
+        ],
+        hiSteps: [
+          "तैयारी: सुहागिन महिलाएं सोलह श्रृंगार कर बांस का पंखा (बेना), भीगे चने, आम व लीची सजाती हैं।",
+          "वट वृक्ष पूजन: वट वृक्ष की पूजा कर कच्चा सूत लपेटते हुए 7 बार परिक्रमा करें।",
+          "कथा श्रवण: वृक्ष के नीचे सावित्री-सत्यवान की कथा सुनें और मौसमी फल अर्पित करें।",
+          "आशीर्वाद: पति को बांस के बेना से हवा करें और बड़ों का आशीर्वाद लें।"
+        ]
+      },
+      {
+        enTitle: "Madhushravani Puja", hiTitle: "मधुश्रावणी पूजा (मिथिला)",
+        enSub: "Shravana Krishna Panchami to Shukla Tritiya", hiSub: "श्रावण कृष्ण पंचमी से शुक्ल तृतीया",
+        enSteps: [
+          "Daily Flower Gathering: Newlywed Maithil brides gather fresh flowers each evening with companions singing traditional songs.",
+          "Gauri & Nag Puja: Worship Maa Gauri, Lord Shiva, and Bishahara (Nag Devta) daily for 13–15 days using Aripan and clay idols.",
+          "Katha: Listen to daily episodes of Shiva-Parvati and Behula-Bishahara Katha.",
+          "Temi Dagna & Closing: On the final day (Shukla Tritiya), perform the symbolic Temi ritual and feast with family."
+        ],
+        hiSteps: [
+          "फूल लोढ़ना: नवविवाहिता प्रतिदिन संध्या समय सखियों के साथ लोकगीत गाते हुए ताजे फूल चुनती हैं।",
+          "गौरी व नाग पूजन: 13–15 दिनों तक प्रतिदिन अरिपन बनाकर माँ गौरी, शिव व विषहरा (नाग देवता) की पूजा करें।",
+          "कथा श्रवण: प्रतिदिन शिव-पार्वती एवं बिहुला-विषहरा की कथा सुनें।",
+          "समापन (टेमी): अंतिम दिन (शुक्ल तृतीया) को पारंपरिक विधि से समापन एवं भोज होता है।"
+        ]
+      },
+      {
+        enTitle: "Sama Chakeva", hiTitle: "समा-चकेवा (मिथिला)",
+        enSub: "Kartika Shukla Saptami to Purnima", hiSub: "कार्तिक शुक्ल सप्तमी से पूर्णिमा",
+        enSteps: [
+          "Clay Idols: Sisters craft and paint clay figures of Sama, Chakeva, Chugla, and Satbhaiya.",
+          "Evening Songs: Gather in courtyards with earthen lamps singing Maithili folk songs celebrating sibling love.",
+          "Chugla Dahan: Symbolically burn the effigy of Chugla (the slanderer) each evening.",
+          "Visarjan: On Kartik Purnima, feed Chura-Dahi to brothers and immerse the idols in a pond or river."
+        ],
+        hiSteps: [
+          "मूर्ति निर्माण: बहनें मिट्टी से समा, चकेवा, चुगला और सतभैया की मूर्तियाँ बनाती हैं।",
+          "संध्या लोकगीत: आंगन में दीप जलाकर भाई-बहन के स्नेह के मैथिली लोकगीत गाएं।",
+          "चुगला दहन: प्रतिदिन संध्या समय प्रतीक रूप से चुगला का दहन किया जाता है।",
+          "विसर्जन: कार्तिक पूर्णिमा को भाइयों को चूड़ा-दही खिलाकर मूर्तियों का विसर्जन करें।"
+        ]
+      },
+      {
+        enTitle: "Saraswati Puja (Vasant Panchami)", hiTitle: "सरस्वती पूजा (वसंत पंचमी)",
+        enSub: "Magha Shukla Panchami", hiSub: "माघ शुक्ल पंचमी",
+        enSteps: [
+          "Sthapana: Place Maa Saraswati's idol or image on a yellow/white cloth over an Aripan; place books and instruments nearby.",
+          "Kalash & Puja: Establish Kalash and offer yellow flowers (Marigold), white Chandan, Akshat, and seasonal Ber (jujube) fruit.",
+          "Pushpanjali: Recite Saraswati Vandana and offer Pushpanjali for wisdom and clarity.",
+          "Aarti & Prasad: Distribute Boondi, Ber, and Kheer Prasad."
+        ],
+        hiSteps: [
+          "स्थापना: अरिपन पर पीले/श्वेत वस्त्र बिछाकर माँ सरस्वती की प्रतिमा एवं पुस्तकें-वाद्ययंत्र रखें।",
+          "कलश व पूजन: कलश स्थापित कर पीले फूल, श्वेत चंदन, अक्षत और मौसमी बेर अर्पित करें।",
+          "पुष्पांजलि: सरस्वती वंदना का पाठ कर विद्या व बुद्धि हेतु पुष्पांजलि दें।",
+          "आरती व प्रसाद: आरती के बाद बूंदी, बेर और खीर का प्रसाद बांटें।"
+        ]
+      },
+      {
         enTitle: "Satyanarayan Puja (Mithila)", hiTitle: "श्री सत्यनारायण पूजा (मैथिल विधि)",
         enSub: "Purnima, Ekadashi or Sankranti", hiSub: "पूर्णिमा, एकादशी या संक्रांति",
         enSteps: [
-          "Mandap & Aripan: Clean the space, draw Maithil Aripan, place a wooden Chauki with yellow cloth, and install Kalash with mango leaves and coconut.",
-          "Sankalp & Ganesh-Gauri Puja: Take Sankalp with water, Akshat, and Kusht/Durva; invoke Ganesh, Gauri, and Navagraha.",
-          "Shaligram / Vishnu Puja: Perform Shodashopachar Puja of Lord Satyanarayan with Tulsi leaves and yellow flowers.",
-          "Katha & Prasad: Listen to all 5 chapters of Satyanarayan Katha, offer Panjiri (roasted wheat flour + ghee + sugar) and Charanamrit, then perform Aarti."
+          "Mandap & Aripan: Draw Maithil Aripan, place a wooden Chauki with yellow cloth, and install Kalash with mango leaves and coconut.",
+          "Sankalp & Ganesh-Gauri Puja: Take Sankalp with water, Akshat, and Kusha; invoke Ganesh, Gauri, and Navagraha.",
+          "Vishnu Puja: Perform Shodashopachar Puja of Lord Satyanarayan with Tulsi leaves and yellow flowers.",
+          "Katha & Prasad: Listen to all 5 chapters, offer Panjiri and Charanamrit, then perform Aarti."
         ],
         hiSteps: [
-          "मंडप व अरिपन: स्थान शुद्ध कर अरिपन बनाएं, पीले वस्त्र सहित चौकी पर आम्रपल्लव व नारियल युक्त कलश स्थापित करें।",
+          "मंडप व अरिपन: अरिपन बनाकर पीले वस्त्र सहित चौकी पर आम्रपल्लव व नारियल युक्त कलश स्थापित करें।",
           "संकल्प व गणेश-गौरी पूजन: जल, अक्षत व कुश से संकल्प लें; गणेश, गौरी एवं नवग्रह का आवाहन करें।",
           "विष्णु पूजन: शालिग्राम या श्री सत्यनारायण का तुलसी दल व पीले पुष्पों से षोडशोपचार पूजन करें।",
           "कथा एवं प्रसाद: पाँचों अध्यायों की कथा सुनें, पंजीरी व चरणामृत का भोग लगाएं और आरती करें।"
+        ]
+      },
+      {
+        enTitle: "Durga Puja (Kalash Sthapana)", hiTitle: "दुर्गा पूजा (कलश स्थापना)",
+        enSub: "Ashwin / Chaitra Shukla Pratipada", hiSub: "आश्विन / चैत्र शुक्ल प्रतिपदा",
+        enSteps: [
+          "Khetri & Kalash: Sow barley (Jau) in an earthen pot, place a copper/clay Kalash filled with Gangajal, coin, Supari, and mango leaves.",
+          "Sankalp & Akhand Jyot: Take Sankalp for 9 days and light an Akhand Ghee/Til oil lamp.",
+          "Devi Avahan: Invoke Maa Durga with red hibiscus flowers, Roli, Sindoor, and Red Chunri.",
+          "Path & Aarti: Recite Durga Saptashati (Chandi Path) daily and perform Sandhya Aarti."
+        ],
+        hiSteps: [
+          "जौ व कलश स्थापना: मिट्टी के पात्र में जौ बोएं और गंगाजल, सिक्का, सुपारी व आम्रपल्लव युक्त कलश स्थापित करें।",
+          "संकल्प व अखंड ज्योत: नवरात्रि का संकल्प लें और अखंड घी/तिल के तेल का दीपक प्रज्वलित करें।",
+          "देवी आवाहन: लाल अड़हुल (गुड़हल) पुष्प, रोली, सिंदूर व लाल चुनरी से माँ दुर्गा का आवाहन करें।",
+          "पाठ व आरती: प्रतिदिन दुर्गा सप्तशती (चंडी पाठ) एवं संध्या आरती करें।"
+        ]
+      },
+      {
+        enTitle: "Diwali (Lakshmi-Ganesh & Kali Puja)", hiTitle: "दीपावली (लक्ष्मी-गणेश व काली पूजा)",
+        enSub: "Kartika Amavasya", hiSub: "कार्तिक अमावस्या",
+        enSteps: [
+          "Cleaning & Aripan: Clean the house, draw Aripan at the entrance and puja room, and light diyas at dusk.",
+          "Lakshmi-Ganesh Puja: During Pradosh/Sthir Lagna, worship Ganesh, Lakshmi, and Kuber with lotus flowers, Kheel-Batasha, and coins.",
+          "Hukka-Pati (Mithila): Light Santhi (jute sticks) reciting 'Lakshmi Ghar, Daridra Bahar' to invite prosperity.",
+          "Kali Puja: In Mithila Shakta tradition, perform Nishita Kaal (midnight) worship of Maa Kali."
+        ],
+        hiSteps: [
+          "स्वच्छता व अरिपन: घर शुद्ध कर द्वार व पूजा गृह में अरिपन बनाएं तथा संध्या समय दीप जलाएं।",
+          "लक्ष्मी-गणेश पूजन: प्रदोष/स्थिर लग्न में कमल पुष्प, खील-बताशे व सिक्कों के साथ गणेश-लक्ष्मी पूजन करें।",
+          "हुक्का-पाती (मिथिला): संठी जलाकर 'लक्ष्मी घर, दरिद्र बाहर' कहते हुए समृद्धि का आवाहन करें।",
+          "काली पूजा: मिथिला की शाक्त परंपरा के अनुसार निशीथ काल (मध्यरात्रि) में माँ काली का पूजन करें।"
+        ]
+      },
+      {
+        enTitle: "Maha Shivaratri (Rudrabhishek)", hiTitle: "महाशिवरात्रि (रुद्राभिषेक विधि)",
+        enSub: "Phalguna Krishna Chaturdashi", hiSub: "फाल्गुन कृष्ण चतुर्दशी",
+        enSteps: [
+          "Fasting & Sankalp: Bathe early, wear clean clothes, and take Sankalp for Shivaratri Vrat.",
+          "Abhishek: Bathe the Shivling with Gangajal, Panchamrit (milk, curd, ghee, honey, sugar), and pure water while chanting 'Om Namah Shivaya'.",
+          "Offerings: Offer 3-leaved Bilva Patra, Dhatura, Aak flowers, Bhasma, and white Chandan.",
+          "Nishita Kaal & Jagaran: Perform midnight Puja and chant Shiva Mantras through the night."
+        ],
+        hiSteps: [
+          "व्रत व संकल्प: प्रातः स्नान कर स्वच्छ वस्त्र पहनें और महाशिवरात्रि व्रत का संकल्प लें।",
+          "अभिषेक: 'ॐ नमः शिवाय' का जप करते हुए गंगाजल, पंचामृत व शुद्ध जल से शिवलिंग का अभिषेक करें।",
+          "अर्पण: त्रिदल बेलपत्र, धतूरा, आक के फूल, भस्म एवं श्वेत चंदन अर्पित करें।",
+          "निशीथ काल व जागरण: मध्यरात्रि में विशेष पूजन एवं रात्रि जागरण करें।"
+        ]
+      },
+      {
+        enTitle: "Krishna Janmashtami", hiTitle: "श्री कृष्ण जन्माष्टमी पूजा",
+        enSub: "Bhadrapada Krishna Ashtami", hiSub: "भाद्रपद कृष्ण अष्टमी",
+        enSteps: [
+          "Fasting & Swing: Observe a day-long fast and decorate a cradle (Jhula) for Bal Gopal.",
+          "Midnight Birth (Nishita): At 12:00 AM, bathe Bal Gopal with Panchamrit and dress Him in yellow Pitambari clothes.",
+          "Bhog: Offer Makhan-Mishri, Dhaniya Panjiri, and Tulsi leaves.",
+          "Aarti & Paran: Sing 'Nand Ke Anand Bhayo', perform Aarti, and break the fast after Prasad."
+        ],
+        hiSteps: [
+          "उपवास व झूला: दिनभर व्रत रखें और बाल गोपाल के लिए सुंदर झूला सजाएं।",
+          "मध्यरात्रि अभिषेक: रात्रि 12:00 बजे बाल गोपाल का पंचामृत से अभिषेक कर पीतांबरी वस्त्र पहनाएं।",
+          "भोग: माखन-मिश्री, धनिया पंजीरी और तुलसी दल का भोग लगाएं।",
+          "आरती व पारण: आरती उतारकर प्रसाद ग्रहण करें और व्रत का पारण करें।"
+        ]
+      },
+      {
+        enTitle: "Griha Pravesh (Vastu Shanti)", hiTitle: "गृह प्रवेश (वास्तु शांति विधि)",
+        enSub: "Shubha Muhurat", hiSub: "शुभ मुहूर्त में",
+        enSteps: [
+          "Dwar Puja: Decorate the main door with mango leaves and marigold Toran; perform Dwar Puja.",
+          "Kalash Entry: Enter with right foot first carrying a water-filled Kalash with coconut and mango leaves.",
+          "Vastu & Navagraha Havan: Perform Ganesh Puja, Vastu Purush Puja, and Havan to purify the space.",
+          "Boiling Milk: Boil fresh milk in a new vessel until it overflows slightly, symbolizing abundance and peace."
+        ],
+        hiSteps: [
+          "द्वार पूजा: मुख्य द्वार को आम के पत्तों व गेंदे के तोरण से सजाकर द्वार पूजन करें।",
+          "कलश प्रवेश: दाहिना पैर पहले रखते हुए जल, नारियल व आम्रपल्लव युक्त कलश लेकर गृह प्रवेश करें।",
+          "वास्तु व नवग्रह हवन: स्थान की शुद्धि हेतु गणेश पूजन, वास्तु पुरुष पूजन एवं हवन करें।",
+          "दूध उबालना: नए बर्तन में दूध उबालकर थोड़ा उफनने दें—यह घर में सुख-समृद्धि का प्रतीक है।"
         ]
       }
     ];
@@ -726,11 +943,16 @@
       const mk = (mins) => { const dt = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0); dt.setMinutes(Math.round(mins)); return dt; };
       const sr = mk(solarNoonMin - H), ss = mk(solarNoonMin + H);
       const seg = (ss - sr) / 8, dow = date.getDay();
-      const rahuSeg = [7,1,6,4,5,3,2][dow], yamaSeg = [4,3,2,1,0,6,5][dow];
+      const rahuSeg = [7,1,6,4,5,3,2][dow];
+      const yamaSeg = [4,3,2,1,0,6,5][dow];
+      const gulikaSeg = [6,5,4,3,2,1,0][dow];
       return {
         sunrise: sr, sunset: ss,
+        brahmaStart: new Date(sr.getTime() - 96 * 60000), brahmaEnd: new Date(sr.getTime() - 48 * 60000),
+        pradoshStart: ss, pradoshEnd: new Date(ss.getTime() + 144 * 60000),
         rahuStart: new Date(sr.getTime() + rahuSeg * seg), rahuEnd: new Date(sr.getTime() + (rahuSeg + 1) * seg),
         yamaStart: new Date(sr.getTime() + yamaSeg * seg), yamaEnd: new Date(sr.getTime() + (yamaSeg + 1) * seg),
+        gulikaStart: new Date(sr.getTime() + gulikaSeg * seg), gulikaEnd: new Date(sr.getTime() + (gulikaSeg + 1) * seg),
         abhijitStart: mk(solarNoonMin - 24), abhijitEnd: mk(solarNoonMin + 24)
       };
     }
@@ -745,7 +967,10 @@
     }
 
     function getPanchang(date, includeExtras = false) {
-      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 6, 0, 0);
+      const now = new Date();
+      const isToday = date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+      const d = isToday ? now : new Date(date.getFullYear(), date.getMonth(), date.getDate(), 6, 0, 0);
+
       const jd = getJD(d);
       const sun = getSunLon(jd), moon = getMoonLon(jd), ayanamsa = getAyanamsa(jd);
       const sunSid = norm(sun - ayanamsa), moonSid = norm(moon - ayanamsa), diff = norm(moon - sun);
@@ -769,9 +994,13 @@
       if (d.getMonth() === 0 && d.getDate() === 14) festKey = "makar";
 
       const illum = Math.round(((1 - Math.cos(toRad(diff))) / 2) * 100);
+      const rituIdx = Math.floor(masaIdx / 2);
+      const ayanaIdx = (sunSid >= 270 || sunSid < 90) ? 0 : 1; // Makara to Mithuna = Uttarayana
+
       const res = {
         jd, dow: d.getDay(), tithiIdx, pakshaKey, nakIdx, yogaIdx, karanaKey: getKaranaKey(diff),
-        masaIdx, masaNum: masaIdx + 1, sunRashiIdx, moonRashiIdx, vikramSamvat, shakaSamvat, illum, festKey,
+        masaIdx, masaNum: masaIdx + 1, sunRashiIdx, moonRashiIdx, rituIdx, ayanaIdx,
+        vikramSamvat, shakaSamvat, illum, festKey,
         isSpecial: Boolean(festKey) || [10, 14, 25, 29].includes(tithiIdx)
       };
       if (includeExtras) {
@@ -812,7 +1041,7 @@
     function getKaranaName(k) { return lang === "hi" ? KARANAS_MAP[k] : k; }
     function getPlanetName(n) { return lang === "hi" ? PLANET_HI[n] : n; }
 
-    // --- Maithil Muhurat Engine (Expandable) ---
+    // --- Maithil Muhurat Engine ---
     const MUHURAT_RULES = {
       vivah:    { naks: [3,4,9,11,12,14,16,18,20,25,26], badDow: [2,6], strict: true },
       griha:    { naks: [3,4,11,13,16,20,22,25,26],     badDow: [0,2], strict: true },
@@ -916,9 +1145,10 @@
       const dt = val ? new Date(val + "T12:00:00") : new Date();
       const p = getPanchang(dt, false), L = I18N[lang];
       const doshas = getDoshas(p);
+      const westIdx = Math.floor(getSunLon(p.jd) / 30);
 
       document.getElementById("astroSummary").innerHTML = `
-        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.sunSign}</div><div class="mini-val mint">${RASHIS[lang][p.sunRashiIdx]}</div></div>
+        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.sunSign} (${lang==="hi"?"वैदिक • पाश्चात्य":"Vedic • West"})</div><div class="mini-val mint">${RASHIS[lang][p.sunRashiIdx]} • ${WESTERN[lang][westIdx]}</div></div>
         <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.moonSign}</div><div class="mini-val mint">${RASHIS[lang][p.moonRashiIdx]}</div></div>
         <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.nakshatra}</div><div class="mini-val">${NAKSHATRAS[lang][p.nakIdx]}</div></div>
         <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.dosha}</div><div class="mini-val ${doshas.length?'warn':'mint'}">${doshas.length ? doshas.join(", ") : L.noDosha}</div></div>`;
@@ -1001,7 +1231,7 @@
     }
 
     // --- Festivals & Tithi Scanner ---
-    function getUpcomingFestivals(limit = 16) {
+    function getUpcomingFestivals(limit = 18) {
       const list = [], seen = new Set(), base = new Date(); base.setHours(0,0,0,0);
       for (let i = 0; i <= 365 && list.length < limit; i++) {
         const dt = new Date(base.getTime() + i * 86400000), p = getPanchang(dt, false);
@@ -1146,22 +1376,36 @@
             <div class="hero-year">${L.vsFull} ${p.vikramSamvat} • ${L.shaka} ${p.shakaSamvat}</div>
           </div>
         </div>`;
+
       document.getElementById("panchangGrid").innerHTML = `
         <div class="mini-card"><div class="mini-lbl">${L.nakshatra}</div><div class="mini-val mint">${NAKSHATRAS[lang][p.nakIdx]}</div></div>
         <div class="mini-card"><div class="mini-lbl">${L.moonPhase}</div><div class="mini-val">${p.illum}% ${L.lit}</div></div>
         <div class="mini-card"><div class="mini-lbl">${L.yoga}</div><div class="mini-val">${YOGAS[lang][p.yogaIdx]}</div></div>
-        <div class="mini-card"><div class="mini-lbl">${L.karana}</div><div class="mini-val">${getKaranaName(p.karanaKey)}</div></div>`;
+        <div class="mini-card"><div class="mini-lbl">${L.karana}</div><div class="mini-val">${getKaranaName(p.karanaKey)}</div></div>
+        <div class="mini-card"><div class="mini-lbl">${L.sunSign}</div><div class="mini-val mint">${RASHIS[lang][p.sunRashiIdx]}</div></div>
+        <div class="mini-card"><div class="mini-lbl">${L.moonSign}</div><div class="mini-val mint">${RASHIS[lang][p.moonRashiIdx]}</div></div>`;
+
       document.getElementById("panchangTimings").innerHTML = `
         <div class="card-head"><h3>${L.tithiSunTimings}</h3></div>
         <div class="row"><span class="lbl">${L.tithiStart}</span><span class="val mint">${fmtDT(p.tithiStart)}</span></div>
         <div class="row"><span class="lbl">${L.tithiEnd}</span><span class="val mint">${fmtDT(p.tithiEnd)}</span></div>
         <div class="row"><span class="lbl">${L.sunrise}</span><span class="val">${fmtTime(st.sunrise)}</span></div>
         <div class="row"><span class="lbl">${L.sunset}</span><span class="val">${fmtTime(st.sunset)}</span></div>`;
+
       document.getElementById("panchangKaal").innerHTML = `
         <div class="card-head"><h3>${L.muhuratKaal}</h3></div>
+        <div class="row"><span class="lbl">${L.brahma}</span><span class="val mint">${fmtTime(st.brahmaStart)} – ${fmtTime(st.brahmaEnd)}</span></div>
         <div class="row"><span class="lbl">${L.abhijit}</span><span class="val mint">${fmtTime(st.abhijitStart)} – ${fmtTime(st.abhijitEnd)}</span></div>
+        <div class="row"><span class="lbl">${L.pradosh}</span><span class="val mint">${fmtTime(st.pradoshStart)} – ${fmtTime(st.pradoshEnd)}</span></div>
         <div class="row"><span class="lbl">${L.rahuKaal}</span><span class="val warn">${fmtTime(st.rahuStart)} – ${fmtTime(st.rahuEnd)}</span></div>
+        <div class="row"><span class="lbl">${L.gulika}</span><span class="val">${fmtTime(st.gulikaStart)} – ${fmtTime(st.gulikaEnd)}</span></div>
         <div class="row"><span class="lbl">${L.yamaganda}</span><span class="val">${fmtTime(st.yamaStart)} – ${fmtTime(st.yamaEnd)}</span></div>`;
+
+      document.getElementById("panchangExtra").innerHTML = `
+        <div class="card-head"><h3>${L.panchangExtra}</h3></div>
+        <div class="row"><span class="lbl">${L.ritu}</span><span class="val">${L.ritus[p.rituIdx]}</span></div>
+        <div class="row"><span class="lbl">${L.ayana}</span><span class="val">${L.ayanas[p.ayanaIdx]}</span></div>
+        <div class="row"><span class="lbl">${L.dishaShool}</span><span class="val warn">${L.dishas[p.dow]}</span></div>`;
     }
 
     const QUICK_PRESETS = [["Any",10],["shukla",14],["krishna",14],["krishna",3],["Any",12]];
