@@ -7,55 +7,130 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Mithila Cal">
-  <meta name="theme-color" content="#121214" id="metaTheme">
+  <meta name="theme-color" content="#0A0B0E" id="metaTheme">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" sizes="180x180" href="icon.PNG?v=7">
-  <link rel="icon" type="image/png" href="icon.PNG?v=7">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon.PNG?v=8">
+  <link rel="icon" type="image/png" href="icon.PNG?v=8">
   <title>Mithila Calendar</title>
   <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
   <style>
     :root {
-      --bg: #121214; --card: #1C1C1F; --elevated: #242428; --border: #2D2D32;
-      --text: #F2F2F7; --body-text: #D8D8DF; --muted: #9A9AA2;
-      --mint: #4AE3B5; --on-mint: #0D1613; --mint-dim: rgba(74, 227, 181, 0.14); --mint-border: rgba(74, 227, 181, 0.38);
-      --gold: #F5C451; --gold-dim: rgba(245, 196, 81, 0.14); --gold-border: rgba(245, 196, 81, 0.42);
-      --fest: #FF7A90; --fest-dim: rgba(255, 122, 144, 0.14); --fest-border: rgba(255, 122, 144, 0.42);
-      --eka: #A89BFF; --eka-dim: rgba(168, 155, 255, 0.14); --eka-border: rgba(168, 155, 255, 0.42);
-      --shukla: #C4CBD4;
+      --bg: #0A0B0E;
+      --bg-grad:
+        radial-gradient(circle at 16% 10%, rgba(255, 255, 255, 0.13) 0%, transparent 42%),
+        radial-gradient(circle at 86% 24%, rgba(74, 227, 181, 0.12) 0%, transparent 46%),
+        radial-gradient(circle at 50% 88%, rgba(166, 120, 255, 0.11) 0%, transparent 50%),
+        linear-gradient(180deg, #111318 0%, #090A0D 100%);
+      --glass-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 55%, rgba(255, 255, 255, 0.08) 100%);
+      --glass-strong: linear-gradient(145deg, rgba(255, 255, 255, 0.17) 0%, rgba(255, 255, 255, 0.06) 100%);
+      --glass-inner: rgba(255, 255, 255, 0.055);
+      --glass-border: rgba(255, 255, 255, 0.22);
+      --glass-border-soft: rgba(255, 255, 255, 0.12);
+      --glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.28), inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+      --glass-sheen: linear-gradient(90deg, transparent 8%, rgba(255, 255, 255, 0.45) 50%, transparent 92%);
+
+      --card: rgba(28, 30, 36, 0.55);
+      --elevated: rgba(255, 255, 255, 0.09);
+      --border: rgba(255, 255, 255, 0.14);
+      --text: #F5F7FA;
+      --body-text: #DDE2EA;
+      --muted: rgba(235, 240, 248, 0.62);
+      --mint: #5BE8BE;
+      --on-mint: #081511;
+      --mint-dim: rgba(91, 232, 190, 0.16);
+      --mint-border: rgba(91, 232, 190, 0.42);
+      --gold: #F5C451;
+      --gold-dim: rgba(245, 196, 81, 0.15);
+      --gold-border: rgba(245, 196, 81, 0.42);
+      --fest: #FF6B6B;
+      --fest-dim: rgba(255, 107, 107, 0.16);
+      --fest-border: rgba(255, 107, 107, 0.42);
+      --eka: #B49CFF;
+      --eka-dim: rgba(180, 156, 255, 0.16);
+      --eka-border: rgba(180, 156, 255, 0.42);
+      --shukla: #CFD6E0;
       --krishna: #A678FF;
-      --warn: #FF6B6B; --warn-dim: rgba(255, 107, 107, 0.12);
-      --wk: rgba(255, 255, 255, 0.03);
-      --tab-bg: rgba(28, 28, 31, 0.94);
+      --warn: #FF6363;
+      --warn-dim: rgba(255, 99, 99, 0.15);
+      --wk: rgba(255, 255, 255, 0.07);
+      --tab-bg: rgba(22, 24, 30, 0.72);
     }
+
     body.light {
-      --bg: #F4F5F7; --card: #FFFFFF; --elevated: #EEF0F3; --border: #DADDE3;
-      --text: #16181D; --body-text: #2B2F38; --muted: #5F6672;
-      --mint: #0B8F6C; --on-mint: #FFFFFF; --mint-dim: rgba(11, 143, 108, 0.10); --mint-border: rgba(11, 143, 108, 0.35);
-      --gold: #B7791F; --gold-dim: rgba(183, 121, 31, 0.10); --gold-border: rgba(183, 121, 31, 0.35);
-      --fest: #C93654; --fest-dim: rgba(201, 54, 84, 0.10); --fest-border: rgba(201, 54, 84, 0.35);
-      --eka: #5B47D6; --eka-dim: rgba(91, 71, 214, 0.10); --eka-border: rgba(91, 71, 214, 0.35);
-      --shukla: #9AA3B2;
+      --bg: #E8ECF2;
+      --bg-grad:
+        radial-gradient(circle at 14% 8%, rgba(255, 255, 255, 0.95) 0%, transparent 45%),
+        radial-gradient(circle at 88% 20%, rgba(11, 143, 108, 0.14) 0%, transparent 48%),
+        radial-gradient(circle at 50% 90%, rgba(124, 77, 255, 0.10) 0%, transparent 50%),
+        linear-gradient(180deg, #EDF1F7 0%, #DFE5EE 100%);
+      --glass-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.52) 60%, rgba(255, 255, 255, 0.68) 100%);
+      --glass-strong: linear-gradient(145deg, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.65) 100%);
+      --glass-inner: rgba(255, 255, 255, 0.52);
+      --glass-border: rgba(255, 255, 255, 0.88);
+      --glass-border-soft: rgba(22, 24, 29, 0.10);
+      --glass-shadow: 0 10px 28px rgba(18, 28, 45, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(22, 24, 29, 0.06);
+      --glass-sheen: linear-gradient(90deg, transparent 8%, rgba(255, 255, 255, 1) 50%, transparent 92%);
+
+      --card: rgba(255, 255, 255, 0.68);
+      --elevated: rgba(255, 255, 255, 0.62);
+      --border: rgba(22, 24, 29, 0.11);
+      --text: #16181D;
+      --body-text: #2B2F38;
+      --muted: #5A6270;
+      --mint: #0B8F6C;
+      --on-mint: #FFFFFF;
+      --mint-dim: rgba(11, 143, 108, 0.12);
+      --mint-border: rgba(11, 143, 108, 0.36);
+      --gold: #B7791F;
+      --gold-dim: rgba(183, 121, 31, 0.11);
+      --gold-border: rgba(183, 121, 31, 0.35);
+      --fest: #D13B3B;
+      --fest-dim: rgba(209, 59, 59, 0.11);
+      --fest-border: rgba(209, 59, 59, 0.35);
+      --eka: #5B47D6;
+      --eka-dim: rgba(91, 71, 214, 0.11);
+      --eka-border: rgba(91, 71, 214, 0.35);
+      --shukla: #94A0B2;
       --krishna: #7C4DFF;
-      --warn: #D13B3B; --warn-dim: rgba(209, 59, 59, 0.10);
-      --wk: rgba(0, 0, 0, 0.03);
-      --tab-bg: rgba(255, 255, 255, 0.95);
+      --warn: #D13B3B;
+      --warn-dim: rgba(209, 59, 59, 0.11);
+      --wk: rgba(22, 24, 29, 0.045);
+      --tab-bg: rgba(255, 255, 255, 0.78);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { -webkit-text-size-adjust: 100%; }
+    html { -webkit-text-size-adjust: 100%; background: var(--bg); }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Noto Sans Devanagari", sans-serif;
-      background: var(--bg); color: var(--text); margin: 0; min-height: 100vh;
-      padding: calc(env(safe-area-inset-top) + 22px) 14px calc(env(safe-area-inset-bottom) + 86px) 14px;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Noto Sans Devanagari", sans-serif;
+      background: var(--bg-grad);
+      background-attachment: fixed;
+      color: var(--text);
+      margin: 0; min-height: 100vh;
+      padding: calc(env(safe-area-inset-top) + 20px) 14px calc(env(safe-area-inset-bottom) + 92px) 14px;
       overflow-x: hidden;
     }
     body::before {
       content: ""; position: fixed; top: 0; left: 0; right: 0;
-      height: calc(env(safe-area-inset-top) + 8px);
-      background: linear-gradient(180deg, var(--bg) 75%, transparent 100%);
+      height: calc(env(safe-area-inset-top) + 10px);
+      background: linear-gradient(180deg, var(--bg) 60%, transparent 100%);
       z-index: 90; pointer-events: none;
     }
     button { font: inherit; color: inherit; -webkit-user-select: none; user-select: none; }
+
+    /* Shared Liquid Glass Surface */
+    .topbar, .card, .fest-banner, .mini-card, .mantra-card, .seg-bar {
+      background: var(--glass-bg);
+      backdrop-filter: blur(22px) saturate(140%);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .topbar::before, .card::before, .fest-banner::before, .mantra-card::before {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: var(--glass-sheen); pointer-events: none;
+    }
 
     /* Large Font Mode (Elderly Friendly) */
     body.large-font .app-title { font-size: 19px; }
@@ -86,66 +161,63 @@
 
     .topbar {
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
-      padding: 10px 10px; gap: 6px; border: 1px solid var(--border); border-radius: 16px;
-      background: radial-gradient(circle at 12% 50%, var(--mint-dim), var(--card) 65%);
+      padding: 10px 12px; gap: 6px; border-radius: 20px;
     }
     .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .brand-icon { width: 32px; height: 32px; flex-shrink: 0; }
-    .app-title { font-size: 16.5px; font-weight: 700; letter-spacing: -0.2px; white-space: nowrap; }
+    .brand-icon { width: 32px; height: 32px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(91, 232, 190, 0.3)); }
+    .app-title { font-size: 16.5px; font-weight: 800; letter-spacing: 0.2px; text-transform: uppercase; white-space: nowrap; }
     .app-sub { font-size: 11px; color: var(--mint); font-weight: 600; margin-top: 2px; line-height: 1.3; }
     .top-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
     .icon-btn, .pill-btn {
-      background: var(--elevated); color: var(--mint); border: 1px solid var(--border);
+      background: var(--glass-inner); color: var(--text); border: 1px solid var(--glass-border);
       border-radius: 18px; min-height: 34px; padding: 0 9px; font-size: 12px; font-weight: 700; cursor: pointer;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
     .icon-btn.active { background: var(--mint); color: var(--on-mint); border-color: var(--mint); }
-    .pill-btn.dim { opacity: 0.42; }
+    .pill-btn { color: var(--mint); }
+    .pill-btn.dim { opacity: 0.45; }
 
-    .view { display: none; animation: fadeIn 0.15s ease; }
+    .view { display: none; animation: fadeIn 0.16s ease; }
     .view.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
 
-    .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 14px; margin-bottom: 12px;
-    }
+    .card { border-radius: 22px; padding: 15px; margin-bottom: 13px; }
 
     .fest-banner {
       display: flex; justify-content: space-between; align-items: center; gap: 10px;
-      background: linear-gradient(135deg, var(--mint-dim) 0%, var(--card) 100%);
-      border: 1px solid var(--mint-border); border-radius: 16px;
-      padding: 12px 14px; margin-bottom: 12px; cursor: pointer;
+      border-radius: 22px; padding: 13px 15px; margin-bottom: 13px; cursor: pointer;
+      background: var(--glass-strong);
     }
-    .fest-kicker { font-size: 11px; font-weight: 700; color: var(--mint); letter-spacing: 0.5px; text-transform: uppercase; }
-    .fest-name { font-size: 16px; font-weight: 700; margin: 2px 0; }
+    .fest-kicker { font-size: 11px; font-weight: 800; color: var(--mint); letter-spacing: 0.7px; text-transform: uppercase; }
+    .fest-name { font-size: 16.5px; font-weight: 800; margin: 2px 0; }
     .fest-date { font-size: 12px; color: var(--muted); }
     .days-badge {
-      background: var(--mint); color: var(--on-mint); border-radius: 12px;
-      padding: 8px 12px; text-align: center; min-width: 68px; flex-shrink: 0;
+      background: var(--glass-inner); color: var(--text); border: 1px solid var(--glass-border);
+      border-radius: 14px; padding: 8px 12px; text-align: center; min-width: 68px; flex-shrink: 0;
     }
-    .days-badge .num { font-size: 18px; font-weight: 800; line-height: 1; }
-    .days-badge .lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 2px; color: var(--on-mint); }
+    .days-badge .num { font-size: 18px; font-weight: 800; line-height: 1; color: var(--mint); }
+    .days-badge .lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; margin-top: 2px; color: var(--muted); }
 
     /* Calendar Header & Controls */
     .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 6px; }
     .nav-btn {
-      background: var(--elevated); color: var(--mint); border: 1px solid var(--border);
-      border-radius: 10px; width: 42px; height: 42px; font-size: 20px; font-weight: 600;
+      background: var(--glass-inner); color: var(--mint); border: 1px solid var(--glass-border-soft);
+      border-radius: 12px; width: 42px; height: 42px; font-size: 20px; font-weight: 600;
       display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
-    .month-meta { text-align: center; cursor: pointer; padding: 4px 8px; border-radius: 10px; }
-    .month-meta:active { background: var(--elevated); }
-    .month-title { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+    .month-meta { text-align: center; cursor: pointer; padding: 4px 8px; border-radius: 12px; }
+    .month-meta:active { background: var(--glass-inner); }
+    .month-title { font-size: 15.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
     .month-hindu { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
     .jump-bar { display: none; gap: 6px; margin-bottom: 10px; }
     .jump-bar.open { display: flex; }
 
-    /* Calendar Grid: Clean, No dots, No images, No festival highlights, Silver (Shukla) & Purple (Krishna) */
+    /* Calendar Grid: Glass cells, Silver (Shukla) & Purple (Krishna) top border only, Red font for all Festivals/Purnima/Amavasya */
     .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; text-align: center; }
-    .dow { font-size: 11px; font-weight: 700; color: var(--muted); padding: 4px 0; }
+    .dow { font-size: 11px; font-weight: 700; color: var(--muted); padding: 4px 0; letter-spacing: 0.4px; }
     .dow.wknd { color: var(--mint); }
     .day {
-      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      background: var(--glass-inner); border: 1px solid var(--glass-border-soft); border-radius: 11px;
       padding: 4px 1px; cursor: pointer; min-width: 0; min-height: 54px;
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 2px;
       border-top: 3px solid var(--shukla); position: relative; overflow: hidden;
@@ -153,23 +225,22 @@
     .day.krishna { border-top-color: var(--krishna); }
     .day.wknd-cell { background: var(--wk); }
     .day.today { box-shadow: 0 0 0 1.5px var(--mint) inset; }
-    .day.selected { background: var(--mint); color: var(--on-mint); border-color: var(--mint); }
+    .day.selected { background: var(--mint); color: var(--on-mint); border-color: var(--mint); box-shadow: 0 4px 14px rgba(91, 232, 190, 0.35); }
     .day .num { font-size: 14px; font-weight: 700; line-height: 1.1; }
     .day .t {
-      font-size: 9.5px; font-weight: 600; line-height: 1.15; opacity: 0.92;
+      font-size: 9.5px; font-weight: 600; line-height: 1.15; color: var(--muted);
       display: flex; flex-direction: column; align-items: center; width: 100%;
     }
     .day .t span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-    .day .t { color: var(--muted); }
     .day .t span.t-red { color: var(--warn); font-weight: 700; }
     .day.selected .t, .day.selected .t span.t-red { color: var(--on-mint); opacity: 1; }
 
     /* Details, Why This Day Matters & Cards */
     .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
-    .card-head h3 { margin: 0; font-size: 15px; color: var(--mint); }
+    .card-head h3 { margin: 0; font-size: 15px; font-weight: 800; letter-spacing: 0.3px; text-transform: uppercase; color: var(--text); }
     .fest-tag {
       background: var(--fest-dim); color: var(--fest); border: 1px solid var(--fest-border);
-      font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; display: inline-block; margin: 2px 4px 2px 0;
+      font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px; display: inline-block; margin: 2px 4px 2px 0;
     }
     .fest-tag.eka { background: var(--eka-dim); color: var(--eka); border-color: var(--eka-border); }
     .fest-tag.gold { background: var(--gold-dim); color: var(--gold); border-color: var(--gold-border); }
@@ -179,50 +250,50 @@
     }
     .row {
       font-size: 13.5px; display: flex; justify-content: space-between; align-items: center;
-      padding: 7px 0; border-bottom: 1px solid var(--border); gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--border); gap: 10px;
     }
     .row:last-child { border-bottom: none; padding-bottom: 0; }
     .lbl { color: var(--muted); }
-    .val { font-weight: 500; text-align: right; }
-    .val.mint { color: var(--mint); font-weight: 600; }
-    .val.warn { color: var(--warn); font-weight: 600; }
+    .val { font-weight: 600; text-align: right; }
+    .val.mint { color: var(--mint); font-weight: 700; }
+    .val.warn { color: var(--warn); font-weight: 700; }
 
     .rahu-box {
       display: flex; justify-content: space-between; align-items: center; gap: 10px;
-      margin: 10px 0 8px; padding: 9px 12px; border-radius: 12px;
-      background: var(--warn-dim); border: 1px solid var(--warn); font-size: 13.5px;
+      margin: 10px 0 8px; padding: 10px 12px; border-radius: 14px;
+      background: var(--warn-dim); border: 1px solid rgba(255, 99, 99, 0.45); font-size: 13.5px;
     }
     .rahu-box b { color: var(--warn); }
 
-    .why-card { border-left: 3.5px solid var(--mint); }
+    .why-card { border-left: 3px solid var(--mint); }
     .why-text { font-size: 13.5px; line-height: 1.6; color: var(--body-text); user-select: text; -webkit-user-select: text; }
 
     .act-row { display: flex; gap: 8px; margin-top: 12px; }
     .act-btn {
-      flex: 1; background: var(--elevated); color: var(--mint); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; text-align: center;
+      flex: 1; background: var(--glass-inner); color: var(--mint); border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 10px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer; text-align: center;
     }
 
     .hero { display: flex; align-items: center; gap: 14px; }
     .moon-box {
-      width: 56px; height: 56px; border-radius: 14px; background: var(--bg);
-      border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      width: 58px; height: 58px; border-radius: 16px; background: var(--glass-inner);
+      border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .hero-tithi { font-size: 19px; font-weight: 700; }
-    .hero-sub { font-size: 12.5px; color: var(--mint); font-weight: 600; margin-top: 2px; }
+    .hero-tithi { font-size: 20px; font-weight: 800; letter-spacing: -0.2px; }
+    .hero-sub { font-size: 12.5px; color: var(--mint); font-weight: 700; margin-top: 2px; }
     .hero-year { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
 
-    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-    .mini-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; }
-    .mini-lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; }
-    .mini-val { font-size: 14px; font-weight: 600; margin-top: 4px; }
+    .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 13px; }
+    .mini-card { border-radius: 18px; padding: 13px; }
+    .mini-lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .mini-val { font-size: 14.5px; font-weight: 700; margin-top: 4px; }
     .mini-val.mint { color: var(--mint); }
     .mini-val.warn { color: var(--warn); }
 
-    .sec-title { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 8px 2px; }
+    .sec-title { font-size: 11.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; margin: 8px 0 8px 4px; }
     .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
     .chip {
-      background: var(--elevated); border: 1px solid var(--border); color: var(--text);
+      background: var(--glass-inner); border: 1px solid var(--glass-border-soft); color: var(--text);
       font-size: 12px; font-weight: 600; padding: 8px 12px; border-radius: 18px; cursor: pointer;
     }
     .chip.active { background: var(--mint-dim); border-color: var(--mint); color: var(--mint); }
@@ -245,18 +316,18 @@
     }
     .astro-controls .reset-btn { padding: 0 10px; min-height: 40px; font-size: 12px; }
     select, input[type="date"], input[type="time"], input[type="search"] {
-      background: var(--bg); color: var(--text); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 10px; font-size: 13.5px; font-weight: 600;
+      background: var(--glass-inner); color: var(--text); border: 1px solid var(--glass-border-soft);
+      border-radius: 12px; padding: 10px 10px; font-size: 13.5px; font-weight: 600;
       width: 100%; max-width: 100%; min-width: 0; outline: none; min-height: 42px;
       -webkit-appearance: none; appearance: none;
     }
     .reset-btn {
-      background: var(--elevated); color: var(--mint); border: 1px solid var(--border);
-      border-radius: 10px; padding: 0 16px; min-height: 42px; font-size: 13px; font-weight: 700;
+      background: var(--glass-inner); color: var(--mint); border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 0 16px; min-height: 42px; font-size: 13px; font-weight: 700;
       cursor: pointer; white-space: nowrap; flex-shrink: 0;
     }
     .finder-result {
-      background: var(--bg); border: 1px solid var(--mint-border); border-radius: 12px;
+      background: var(--glass-inner); border: 1px solid var(--mint-border); border-radius: 16px;
       padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
     }
 
@@ -265,59 +336,70 @@
       padding: 10px 0; border-bottom: 1px solid var(--border); gap: 10px;
     }
     .list-item:last-child { border-bottom: none; padding-bottom: 0; }
-    .li-name { font-size: 14px; font-weight: 600; }
+    .li-name { font-size: 14px; font-weight: 700; }
     .li-sub { font-size: 12px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
     .li-badge {
-      background: var(--mint-dim); color: var(--mint); border: 1px solid var(--mint-border);
-      border-radius: 10px; padding: 5px 9px; font-size: 11.5px; font-weight: 700; white-space: nowrap;
+      background: var(--glass-inner); color: var(--mint); border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 5px 10px; font-size: 11.5px; font-weight: 700; white-space: nowrap;
     }
 
     .exp-wrap { border-bottom: 1px solid var(--border); padding: 10px 0; }
     .exp-wrap:last-child { border-bottom: none; padding-bottom: 0; }
     .exp-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; cursor: pointer; min-height: 44px; }
     .exp-body {
-      display: none; margin-top: 8px; padding: 10px 12px; border-radius: 10px;
-      background: var(--bg); border-left: 3px solid var(--mint); font-size: 12.5px; line-height: 1.55; color: var(--body-text);
+      display: none; margin-top: 8px; padding: 11px 12px; border-radius: 14px;
+      background: var(--glass-inner); border-left: 3px solid var(--mint); font-size: 12.5px; line-height: 1.55; color: var(--body-text);
     }
     .exp-wrap.open .exp-body { display: block; }
     .mini-link {
-      display: inline-block; margin-top: 8px; margin-right: 6px; padding: 7px 11px; border-radius: 8px;
+      display: inline-block; margin-top: 8px; margin-right: 6px; padding: 7px 11px; border-radius: 10px;
       background: var(--mint-dim); color: var(--mint); border: 1px solid var(--mint-border);
       font-size: 11.5px; font-weight: 700; cursor: pointer;
     }
 
     .seg-bar {
       display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
-      background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 12px;
+      border-radius: 16px; padding: 4px; margin-bottom: 12px;
     }
-    .seg-btn { padding: 10px; text-align: center; font-size: 12.5px; font-weight: 700; border-radius: 9px; color: var(--muted); cursor: pointer; }
+    .seg-btn { padding: 10px; text-align: center; font-size: 12.5px; font-weight: 700; border-radius: 12px; color: var(--muted); cursor: pointer; }
     .seg-btn.active { background: var(--mint); color: var(--on-mint); }
     .mantra-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 10px;
+      border-radius: 18px; padding: 15px; margin-bottom: 11px;
       user-select: text; -webkit-user-select: text;
     }
-    .mantra-title { font-size: 14px; font-weight: 700; color: var(--mint); margin-bottom: 6px; }
+    .mantra-title { font-size: 14px; font-weight: 800; color: var(--mint); margin-bottom: 6px; }
     .mantra-text { font-size: 15.5px; line-height: 1.8; color: var(--text); white-space: pre-line; }
     .vidhi-steps { margin: 6px 0 0 18px; padding: 0; }
     .vidhi-steps li { margin-bottom: 6px; }
 
     .note { font-size: 11.5px; color: var(--muted); line-height: 1.5; margin-top: 8px; }
 
+    /* Floating Frosted Glass Pill Navigation Dock */
     .tabbar {
-      position: fixed; bottom: 0; left: 0; right: 0; background: var(--tab-bg);
-      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-      border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(6, 1fr);
-      padding: 6px 2px calc(env(safe-area-inset-bottom) + 6px) 2px; z-index: 100;
+      position: fixed; bottom: calc(env(safe-area-inset-bottom) + 8px); left: 10px; right: 10px;
+      background: var(--tab-bg);
+      backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      border-radius: 24px;
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 3px;
+      padding: 5px; z-index: 100;
     }
     .tab {
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-      color: var(--muted); font-size: 10px; font-weight: 600; cursor: pointer; min-height: 44px;
+      color: var(--muted); font-size: 9.5px; font-weight: 700; cursor: pointer; min-height: 46px;
+      border-radius: 18px; border: 1px solid transparent; transition: all 0.16s ease;
     }
-    .tab svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-    .tab.active { color: var(--mint); }
+    .tab svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.85; }
+    .tab.active {
+      color: var(--mint);
+      background: var(--glass-strong);
+      border-color: var(--glass-border);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
 
     #toast {
-      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 90px);
+      position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 92px);
       transform: translateX(-50%) translateY(20px); background: var(--text); color: var(--bg);
       padding: 9px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
       opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 300;
@@ -1272,7 +1354,8 @@
         if (dt.toDateString() === todayStr) cls += " today";
         if (dt.toDateString() === selStr) cls += " selected";
 
-        const tSpan = idx => `<span class="${(idx === 14 || idx === 29) ? 't-red' : ''}">${TITHI_SHORT[lang][idx]}</span>`;
+        const isFestDay = p.keys.length > 0;
+        const tSpan = idx => `<span class="${(isFestDay || idx === 14 || idx === 29) ? 't-red' : ''}">${TITHI_SHORT[lang][idx]}</span>`;
         const tHtml = p.hasDualTithi
           ? `<div class="t">${tSpan(p.tithiAM)}${tSpan(p.tithiPM)}</div>`
           : `<div class="t">${tSpan(p.tithiAM)}</div>`;
@@ -1529,12 +1612,12 @@
       const doshas = getDoshas(a), westIdx = Math.floor(a.sun / 30), lagna = getSiderealLagna(dt);
 
       document.getElementById("astroSummary").innerHTML = `
-        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.lagna}</div><div class="mini-val mint">${RASHIS[lang][lagna.rashiIdx]} ${lagna.deg}°</div></div>
-        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.tithi}</div><div class="mini-val">${L[a.pakshaKey]} ${TITHIS[lang][a.tithiIdx]}</div></div>
-        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.sunSign}</div><div class="mini-val mint">${RASHIS[lang][a.sunRashiIdx]} • ${WESTERN[lang][westIdx]}</div></div>
-        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.moonSign}</div><div class="mini-val mint">${RASHIS[lang][a.moonRashiIdx]}</div></div>
-        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.nakshatra}</div><div class="mini-val">${NAKSHATRAS[lang][a.nakIdx]}</div></div>
-        <div class="mini-card" style="background:var(--bg);"><div class="mini-lbl">${L.dosha}</div><div class="mini-val ${doshas.length?'warn':'mint'}">${doshas.length ? doshas.join(", ") : L.noDosha}</div></div>`;
+        <div class="mini-card" style="background:var(--glass-inner);box-shadow:none;"><div class="mini-lbl">${L.lagna}</div><div class="mini-val mint">${RASHIS[lang][lagna.rashiIdx]} ${lagna.deg}°</div></div>
+        <div class="mini-card" style="background:var(--glass-inner);box-shadow:none;"><div class="mini-lbl">${L.tithi}</div><div class="mini-val">${L[a.pakshaKey]} ${TITHIS[lang][a.tithiIdx]}</div></div>
+        <div class="mini-card" style="background:var(--glass-inner);box-shadow:none;"><div class="mini-lbl">${L.sunSign}</div><div class="mini-val mint">${RASHIS[lang][a.sunRashiIdx]} • ${WESTERN[lang][westIdx]}</div></div>
+        <div class="mini-card" style="background:var(--glass-inner);box-shadow:none;"><div class="mini-lbl">${L.moonSign}</div><div class="mini-val mint">${RASHIS[lang][a.moonRashiIdx]}</div></div>
+        <div class="mini-card" style="background:var(--glass-inner);box-shadow:none;"><div class="mini-lbl">${L.nakshatra}</div><div class="mini-val">${NAKSHATRAS[lang][a.nakIdx]}</div></div>
+        <div class="mini-card" style="background:var(--glass-inner);box-shadow:none;"><div class="mini-lbl">${L.dosha}</div><div class="mini-val ${doshas.length?'warn':'mint'}">${doshas.length ? doshas.join(", ") : L.noDosha}</div></div>`;
 
       const names = ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
       document.getElementById("planetList").innerHTML = names.map(name => {
@@ -1695,7 +1778,7 @@
       theme = theme === "dark" ? "light" : "dark"; sSet("mc_theme", theme);
       document.body.classList.toggle("light", theme === "light");
       document.getElementById("themeBtn").innerText = theme === "light" ? "🌙" : "☀️";
-      document.getElementById("metaTheme").content = theme === "light" ? "#F4F5F7" : "#121214";
+      document.getElementById("metaTheme").content = theme === "light" ? "#E8ECF2" : "#0A0B0E";
     }
     function toggleLargeFont() {
       largeFont = !largeFont; sSet("mc_large", largeFont ? "1" : "0");
@@ -1748,7 +1831,7 @@
     if (theme === "light") {
       document.body.classList.add("light");
       document.getElementById("themeBtn").innerText = "🌙";
-      document.getElementById("metaTheme").content = "#F4F5F7";
+      document.getElementById("metaTheme").content = "#E8ECF2";
     }
     if (largeFont) {
       document.body.classList.add("large-font");
