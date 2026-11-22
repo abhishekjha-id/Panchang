@@ -9,8 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="Mithila Cal">
   <meta name="theme-color" content="#0A0B0E" id="metaTheme">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" sizes="180x180" href="icon.PNG?v=9">
-  <link rel="icon" type="image/png" href="icon.PNG?v=9">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon.PNG">
+  <link rel="icon" type="image/png" href="icon.PNG">
   <title>Mithila Calendar</title>
   <script src="astronomy.browser.min.js"></script>
   <style>
@@ -158,6 +158,9 @@
     body.large-font .sec-title { font-size: 13.5px; }
     body.large-font .note { font-size: 13.5px; }
     body.large-font .act-btn, body.large-font .mini-link { font-size: 14px; }
+    body.large-font select, body.large-font input[type="search"] { font-size: 15.5px; }
+    body.large-font .chip { font-size: 13.5px; }
+    body.large-font #quickChips .chip, body.large-font #muhuratChips .chip { font-size: 11px; }
 
     .topbar {
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
@@ -187,7 +190,7 @@
     .fest-banner {
       display: flex; justify-content: space-between; align-items: center; gap: 10px;
       border-radius: 22px; padding: 13px 15px; margin-bottom: 13px; cursor: pointer;
-      background: var(--glass-strong);
+      background: var(--glass-strong); min-height: 70px;
     }
     .fest-kicker { font-size: 11px; font-weight: 800; color: var(--mint); letter-spacing: 0.7px; text-transform: uppercase; }
     .fest-name { font-size: 16.5px; font-weight: 800; margin: 2px 0; }
@@ -321,6 +324,13 @@
       border-radius: 12px; padding: 10px 10px; font-size: 13.5px; font-weight: 600;
       width: 100%; max-width: 100%; min-width: 0; outline: none; min-height: 42px;
       -webkit-appearance: none; appearance: none;
+    }
+    select {
+      padding-right: 28px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A9AA2' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 12px;
     }
     .reset-btn {
       background: var(--glass-inner); color: var(--mint); border: 1px solid var(--glass-border);
@@ -664,8 +674,8 @@
       hi:["प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा","प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"]
     };
     const TITHI_SHORT = {
-      en:["Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chatu","Purn","Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chatu","Amav"],
-      hi:["प्रति","द्वि","तृती","चतु","पंच","षष्ठी","सप्त","अष्ट","नव","दश","एका","द्वा","त्रयो","चतु","पूर्णि","प्रति","द्वि","तृती","चतु","पंच","षष्ठी","सप्त","अष्ट","नव","दश","एका","द्वा","त्रयो","चतु","अमा"]
+      en:["Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chd","Purn","Prati","Dwiti","Trit","Chatu","Panch","Shash","Sapt","Asht","Navam","Dasha","Ekad","Dwad","Trayo","Chd","Amav"],
+      hi:["प्रति","द्वि","तृती","चतु","पंच","षष्ठी","सप्त","अष्ट","नव","दश","एका","द्वा","त्रयो","चतुर्द","पूर्णि","प्रति","द्वि","तृती","चतु","पंच","षष्ठी","सप्त","अष्ट","नव","दश","एका","द्वा","त्रयो","चतुर्द","अमा"]
     };
     const TITHI_15 = {
       en:["Pratipada","Dwitiya","Tritiya","Chaturthi","Panchami","Shashthi","Saptami","Ashtami","Navami","Dashami","Ekadashi","Dwadashi","Trayodashi","Chaturdashi","Purnima / Amavasya"],
@@ -1111,7 +1121,7 @@
       if (memo.has(k)) return memo.get(k);
       const st = getRiseSet(y, m, d);
       const aSR = astroAt(st.sunrise), aPM = astroAt(st.sunset), aNoon = astroAt(st.noon);
-      const vikramSamvat = (m < 4 && aSR.amantaIdx >= 8) ? y + 56 : y + 57;
+      const vikramSamvat = (m < 4 && (aSR.amantaIdx >= 8 || (aSR.amantaIdx === 0 && aSR.isAdhika))) ? y + 56 : y + 57;
       const keys = computeFestKeys(y, m, d);
       const festKey = keys.find(isMajor) || keys[0] || null;
       const res = {
@@ -1203,7 +1213,17 @@
     }
     function fmtShortDate(dt) { const L = I18N[lang]; return `${L.gDaysShort[dt.getDay()]}, ${dt.getDate()} ${L.gMonthsShort[dt.getMonth()]} ${dt.getFullYear()}`; }
     function fmtFullDate(dt) { const L = I18N[lang]; return `${L.gDays[dt.getDay()]}, ${dt.getDate()} ${L.gMonths[dt.getMonth()]} ${dt.getFullYear()}`; }
-    function fmtDT(dt) { return dt ? `${dt.getDate()} ${I18N[lang].gMonthsShort[dt.getMonth()]}, ${fmtTime(dt)}` : "—"; }
+    function fmtDT(dt) {
+      if (!dt) return "—";
+      try {
+        const parts = new Intl.DateTimeFormat("en-US", { timeZone: TZ, day: "numeric", month: "numeric" }).formatToParts(dt);
+        const day = parts.find(p => p.type === "day").value;
+        const mon = parseInt(parts.find(p => p.type === "month").value, 10) - 1;
+        return `${day} ${I18N[lang].gMonthsShort[mon]}, ${fmtTime(dt)}`;
+      } catch {
+        return `${dt.getDate()} ${I18N[lang].gMonthsShort[dt.getMonth()]}, ${fmtTime(dt)}`;
+      }
+    }
     function fmtDays(n) { const L = I18N[lang]; return n === 0 ? L.today : (n === 1 ? `1 ${L.day}` : `${n} ${L.days}`); }
     const localISO = dt => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
     const localTimeISO = dt => `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
@@ -1236,9 +1256,11 @@
       return out.join("\r\n");
     }
     function downloadICS(events, filename) {
+      const url = URL.createObjectURL(new Blob([buildICS(events)], { type: "text/calendar;charset=utf-8" }));
       const a = document.createElement("a");
-      a.href = URL.createObjectURL(new Blob([buildICS(events)], { type: "text/calendar;charset=utf-8" }));
-      a.download = filename; a.click();
+      a.href = url; a.download = filename; a.style.display = "none";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
       toast(I18N[lang].calSaved);
     }
     function exportSelectedICS() {
@@ -1364,7 +1386,7 @@
       const daysInMonth = new Date(y, m + 1, 0).getDate();
       const fP = getDayPanchang(y, m, 1, false), lP = getDayPanchang(y, m, daysInMonth, false);
       const fName = masaLabel(fP), lName = masaLabel(lP);
-      document.getElementById("monthHindu").innerText = `${fName === lName ? fName : fName + " – " + lName} • ${L.vs} ${fP.vikramSamvat}`;
+      const vsStr = fP.vikramSamvat === lP.vikramSamvat ? `${L.vs} ${fP.vikramSamvat}` : `${L.vs} ${fP.vikramSamvat} – ${lP.vikramSamvat}`; document.getElementById("monthHindu").innerText = `${fName === lName ? fName : fName + " – " + lName} • ${vsStr}`;
 
       const firstDay = new Date(y, m, 1).getDay();
       const todayStr = new Date().toDateString(), selStr = selectedDate.toDateString();
@@ -1383,8 +1405,9 @@
         if (dt.toDateString() === todayStr) cls += " today";
         if (dt.toDateString() === selStr) cls += " selected";
 
-        const isFestDay = p.keys.length > 0;
-        const tSpan = idx => `<span class="${(isFestDay || idx === 14 || idx === 29) ? 't-red' : ''}">${TITHI_SHORT[lang][idx]}</span>`;
+        const festTithis = new Set(p.keys.filter(k => k.includes("-")).map(k => parseInt(k.split("-")[1], 10)));
+        const hasMakar = p.keys.includes("makar");
+        const tSpan = idx => `<span class="${(hasMakar || festTithis.has(idx) || idx === 14 || idx === 29) ? 't-red' : ''}">${TITHI_SHORT[lang][idx]}</span>`;
         const tHtml = p.hasDualTithi
           ? `<div class="t">${tSpan(p.tithiAM)}${tSpan(p.tithiPM)}</div>`
           : `<div class="t">${tSpan(p.tithiAM)}</div>`;
@@ -1437,8 +1460,8 @@
         </div>
         ${tags ? `<div style="margin-bottom:8px;">${tags}</div>` : ""}
         ${p.hasDualTithi ? `
-          <div class="row"><span class="lbl">${L.tithi} (AM)</span><span class="val mint">${L[p.tithiAM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiAM]} (${fmtTime(p.tithiEnd)})</span></div>
-          <div class="row"><span class="lbl">${L.tithi} (PM)</span><span class="val mint">${L[p.tithiPM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiPM]} (${fmtTime(p.tithiPMEnd)})</span></div>
+          <div class="row"><span class="lbl">${L.tithi} (AM)</span><span class="val mint">${L[p.tithiAM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiAM]}<br><small style="color:var(--muted)">${L.tithiEnd}: ${p.tithiEnd && p.tithiEnd.toDateString() === selectedDate.toDateString() ? fmtTime(p.tithiEnd) : fmtDT(p.tithiEnd)}</small></span></div>
+          <div class="row"><span class="lbl">${L.tithi} (PM)</span><span class="val mint">${L[p.tithiPM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiPM]}<br><small style="color:var(--muted)">${L.tithiEnd}: ${p.tithiPMEnd && p.tithiPMEnd.toDateString() === selectedDate.toDateString() ? fmtTime(p.tithiPMEnd) : fmtDT(p.tithiPMEnd)}</small></span></div>
         ` : `
           <div class="row"><span class="lbl">${L.udaya}</span><span class="val mint">${L[p.pakshaKey]} ${TITHIS[lang][p.tithiAM]}</span></div>
           <div class="row"><span class="lbl">${L.tithiStart} – ${L.tithiEnd}</span><span class="val">${fmtDT(p.tithiStart)} → ${fmtDT(p.tithiEnd)}</span></div>
@@ -1664,7 +1687,7 @@
           <span class="lbl" style="color:var(--text);font-weight:600;">${lang==="hi"?PLANET_HI[name]:name} ${retro?`<span class="warn-tag">${L.vakri}</span>`:""}</span>
           <span class="val mint">${RASHIS[lang][rIdx]} ${(sid % 30).toFixed(1)}°</span>
         </div>`;
-      }).join("");
+      }).join("") + `<div class="note">${L.lagna}: ${LAT.toFixed(2)}°N, ${LON.toFixed(2)}°E</div>`;
     }
 
     function renderTransitsAndEclipses() {
@@ -1686,10 +1709,32 @@
 
       const ecl = [];
       if (HAS_ASTRO) {
-        let sE = Astronomy.SearchGlobalSolarEclipse(base), lE = Astronomy.SearchLunarEclipse(base);
+        const obs = new Astronomy.Observer(LAT, LON, 0);
+        let sE = Astronomy.SearchLocalSolarEclipse(base, obs), lE = Astronomy.SearchLunarEclipse(base);
         for (let k = 0; k < 3; k++) {
-          if (sE) { ecl.push({ dt: sE.peak.date, kind: sE.kind + " Solar Eclipse", sutak: lang==="hi" ? "दृश्य होने पर 12 घंटे पूर्व" : "12h prior if visible locally" }); sE = Astronomy.NextGlobalSolarEclipse(sE.peak); }
-          if (lE) { ecl.push({ dt: lE.peak.date, kind: lE.kind + " Lunar Eclipse", sutak: lE.kind === "penumbral" ? (lang==="hi"?"सूतक मान्य नहीं (उपच्छाया)":"No Sutak (Penumbral)") : (lang==="hi"?"दृश्य होने पर 9 घंटे पूर्व":"9h prior if visible locally") }); lE = Astronomy.NextLunarEclipse(lE.peak); }
+          if (sE) {
+            ecl.push({
+              dt: sE.peak.time.date,
+              kind: sE.kind + (lang === "hi" ? " सूर्य ग्रहण (स्थानीय दृश्य)" : " Solar Eclipse (Visible)"),
+              sutak: lang === "hi" ? "12 घंटे पूर्व से सूतक मान्य" : "Sutak starts 12h prior (Visible locally)"
+            });
+            sE = Astronomy.NextLocalSolarEclipse(sE.peak.time, obs);
+          }
+          if (lE) {
+            const eq = Astronomy.Equator("Moon", lE.peak.date, obs, true, true);
+            const vis = Astronomy.Horizon(lE.peak.date, obs, eq.ra, eq.dec, "normal").altitude > 0;
+            const sutakTxt = !vis
+              ? (lang === "hi" ? "लागू नहीं (यहाँ अदृश्य)" : "Not applicable (Not visible here)")
+              : (lE.kind === "penumbral"
+                ? (lang === "hi" ? "सूतक मान्य नहीं (उपच्छाया)" : "No Sutak (Penumbral)")
+                : (lang === "hi" ? "9 घंटे पूर्व से सूतक मान्य" : "Sutak starts 9h prior (Visible locally)"));
+            ecl.push({
+              dt: lE.peak.date,
+              kind: lE.kind + (lang === "hi" ? " चंद्र ग्रहण" : " Lunar Eclipse"),
+              sutak: sutakTxt
+            });
+            lE = Astronomy.NextLunarEclipse(lE.peak);
+          }
         }
         ecl.sort((a, b) => a.dt - b.dt);
       }
@@ -1743,18 +1788,25 @@
       for (let i = 0; i <= 60; i++) {
         const dt = new Date(base.getTime() + i * 86400000);
         const p = getDayPanchang(dt.getFullYear(), dt.getMonth(), dt.getDate(), false);
-        if ((p.tithiAM % 15) === finderTithi && (finderPaksha === "Any" || p.pakshaKey === finderPaksha)) {
-          res = { dt, days: i, p: getDayPanchang(dt.getFullYear(), dt.getMonth(), dt.getDate(), true) };
+        const matchAM = (p.tithiAM % 15) === finderTithi && (finderPaksha === "Any" || (p.tithiAM < 15 ? "shukla" : "krishna") === finderPaksha);
+        const matchPM = p.hasDualTithi && (p.tithiPM % 15) === finderTithi && (finderPaksha === "Any" || (p.tithiPM < 15 ? "shukla" : "krishna") === finderPaksha);
+        if (matchAM || matchPM) {
+          const fullP = getDayPanchang(dt.getFullYear(), dt.getMonth(), dt.getDate(), true);
+          res = { dt, days: i, p: fullP, isPM: !matchAM && matchPM };
           break;
         }
       }
       const L = I18N[lang];
       if (!res) { document.getElementById("finderResult").innerHTML = `<div class="note">${L.noMatch}</div>`; return; }
+      const fIdx = res.isPM ? res.p.tithiPM : res.p.tithiAM;
+      const fPak = fIdx < 15 ? "shukla" : "krishna";
+      const fStart = res.isPM ? res.p.tithiPMStart : res.p.tithiStart;
+      const fEnd = res.isPM ? res.p.tithiPMEnd : res.p.tithiEnd;
       document.getElementById("finderResult").innerHTML = `
         <div>
-          <div class="fest-name" style="font-size:15px;">${L[res.p.pakshaKey]} ${TITHIS[lang][res.p.tithiAM]}</div>
+          <div class="fest-name" style="font-size:15px;">${L[fPak]} ${TITHIS[lang][fIdx]}</div>
           <div class="fest-date">${fmtShortDate(res.dt)} • ${masaLabel(res.p)}</div>
-          <div class="fest-date" style="color:var(--mint);margin-top:3px;">${fmtDT(res.p.tithiStart)} → ${fmtDT(res.p.tithiEnd)}</div>
+          <div class="fest-date" style="color:var(--mint);margin-top:3px;">${fmtDT(fStart)} → ${fmtDT(fEnd)}</div>
         </div>
         <div class="days-badge"><div class="num">${res.days === 0 ? "★" : res.days}</div><div class="lbl">${res.days === 0 ? L.today : (res.days === 1 ? L.day : L.days)}</div></div>`;
     }
@@ -1857,7 +1909,19 @@
       if (Math.abs(dx) > 55 && Math.abs(dy) < 45) changeMonth(dx < 0 ? 1 : -1);
     }, { passive: true });
 
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) { renderedTabs.clear(); renderActiveView(); } });
+    let lastDayISO = localISO(new Date());
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) return;
+      const curISO = localISO(new Date());
+      if (curISO !== lastDayISO) {
+        lastDayISO = curISO;
+        viewDate = new Date();
+        selectedDate = new Date();
+        upCache = null;
+      }
+      renderedTabs.clear();
+      renderActiveView();
+    });
     if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
       window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
     }
