@@ -9,10 +9,10 @@
   <meta name="apple-mobile-web-app-title" content="Mithila Cal">
   <meta name="theme-color" content="#0A0B0E" id="metaTheme">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" sizes="180x180" href="icon.PNG?v=8">
-  <link rel="icon" type="image/png" href="icon.PNG?v=8">
+  <link rel="apple-touch-icon" sizes="180x180" href="icon.PNG?v=9">
+  <link rel="icon" type="image/png" href="icon.PNG?v=9">
   <title>Mithila Calendar</title>
-  <script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2.1.19/astronomy.browser.min.js"></script>
+  <script src="astronomy.browser.min.js"></script>
   <style>
     :root {
       --bg: #0A0B0E;
@@ -163,14 +163,15 @@
       display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
       padding: 10px 12px; gap: 6px; border-radius: 20px;
     }
-    .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
-    .brand-icon { width: 32px; height: 32px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(91, 232, 190, 0.3)); }
-    .app-title { font-size: 16.5px; font-weight: 800; letter-spacing: 0.2px; text-transform: uppercase; white-space: nowrap; }
-    .app-sub { font-size: 11px; color: var(--mint); font-weight: 600; margin-top: 2px; line-height: 1.3; }
-    .top-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
+    .brand { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+    .brand > div { min-width: 0; overflow: hidden; }
+    .brand-icon { width: 30px; height: 30px; flex-shrink: 0; filter: drop-shadow(0 0 8px rgba(91, 232, 190, 0.3)); }
+    .app-title { font-size: 15px; font-weight: 800; letter-spacing: 0.1px; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-sub { font-size: 10.5px; color: var(--mint); font-weight: 600; margin-top: 2px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .top-actions { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
     .icon-btn, .pill-btn {
       background: var(--glass-inner); color: var(--text); border: 1px solid var(--glass-border);
-      border-radius: 18px; min-height: 34px; padding: 0 9px; font-size: 12px; font-weight: 700; cursor: pointer;
+      border-radius: 16px; min-height: 32px; padding: 0 8px; font-size: 11.5px; font-weight: 700; cursor: pointer;
       backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
     .icon-btn.active { background: var(--mint); color: var(--on-mint); border-color: var(--mint); }
@@ -910,7 +911,12 @@
       if (name === "Ketu") return norm(125.0445 - 0.05295377 * d + 180);
       if (HAS_ASTRO) {
         const vec = Astronomy.GeoVector(name, dt, true);
-        return norm(Astronomy.Ecliptic(vec).elon);
+        if (Astronomy.Rotation_EQJ_ECT && Astronomy.RotateVector) {
+          const ect = Astronomy.RotateVector(Astronomy.Rotation_EQJ_ECT(dt), vec);
+          return norm(toDeg(Math.atan2(ect.y, ect.x)));
+        }
+        const precess = 0.013969 * ((getJD(dt) - 2451545.0) / 365.25);
+        return norm(Astronomy.Ecliptic(vec).elon + precess);
       }
       const sunLon = toRad(getSunLon(dt));
       const ex = -Math.cos(sunLon), ey = -Math.sin(sunLon);
@@ -997,18 +1003,41 @@
       return KARANAS_MOV[(k - 1) % 7];
     }
 
-    /* ======================= Instant Panchang & Lunation ======================= */
+    /* ======================= Exact Cached Lunations & Instant Panchang ======================= */
+    const LUNATIONS = [];
+    function findNewMoonMs(approxDate) {
+      if (HAS_ASTRO) {
+        const t = Astronomy.SearchMoonPhase(0, new Date(approxDate.getTime() - 2 * 86400000), 5);
+        if (t) return t.date.getTime();
+      }
+      return findPhaseTime(approxDate, 0).getTime();
+    }
+    function getLunation(dt) {
+      const ms = dt.getTime();
+      for (let i = 0; i < LUNATIONS.length; i++) {
+        const L = LUNATIONS[i];
+        if (ms >= L.start && ms < L.end) return L;
+      }
+      const diff = norm(getMoonLon(dt) - getSunLon(dt));
+      let s = findNewMoonMs(new Date(ms - (diff / 12.19075) * 86400000));
+      if (s > ms) s = findNewMoonMs(new Date(s - 29.53059 * 86400000));
+      let e = findNewMoonMs(new Date(s + 29.53059 * 86400000));
+      while (ms >= e) { s = e; e = findNewMoonMs(new Date(s + 29.53059 * 86400000)); }
+      const sDt = new Date(s), eDt = new Date(e);
+      const r1 = Math.floor(norm(getSunLon(sDt) - getAyanamsa(sDt)) / 30);
+      const r2 = Math.floor(norm(getSunLon(eDt) - getAyanamsa(eDt)) / 30);
+      const L = { start: s, end: e, amantaIdx: (r1 + 1) % 12, isAdhika: r1 === r2 };
+      LUNATIONS.push(L);
+      return L;
+    }
+
     function astroAt(dt) {
       const ayan = getAyanamsa(dt), sun = getSunLon(dt), moon = getMoonLon(dt);
       const sunSid = norm(sun - ayan), moonSid = norm(moon - ayan), diff = norm(moon - sun);
       const tithiIdx = Math.floor(diff / 12);
-      const daysSinceNM = diff / 12.19075;
-      const nmPrev = new Date(dt.getTime() - daysSinceNM * 86400000);
-      const nmNext = new Date(nmPrev.getTime() + 29.53059 * 86400000);
-      const r1 = Math.floor(norm(getSunLon(nmPrev) - getAyanamsa(nmPrev)) / 30);
-      const r2 = Math.floor(norm(getSunLon(nmNext) - getAyanamsa(nmNext)) / 30);
-      const isAdhika = (r1 === r2);
-      const amantaIdx = (r1 + 1) % 12;
+      const lun = getLunation(dt);
+      const isAdhika = lun.isAdhika;
+      const amantaIdx = lun.amantaIdx;
       const masaIdx = (tithiIdx < 15 || isAdhika) ? amantaIdx : (amantaIdx + 1) % 12; // Purnimanta Mithila
       return {
         dt, sun, moon, sunSid, moonSid, diff,
@@ -1082,7 +1111,7 @@
       if (memo.has(k)) return memo.get(k);
       const st = getRiseSet(y, m, d);
       const aSR = astroAt(st.sunrise), aPM = astroAt(st.sunset), aNoon = astroAt(st.noon);
-      const vikramSamvat = (m < 4 && aSR.masaIdx >= 9) ? y + 56 : y + 57;
+      const vikramSamvat = (m < 4 && aSR.amantaIdx >= 8) ? y + 56 : y + 57;
       const keys = computeFestKeys(y, m, d);
       const festKey = keys.find(isMajor) || keys[0] || null;
       const res = {
@@ -1382,12 +1411,18 @@
     }
 
     function ekadashiParanaRow(p) {
-      if (!p.keys.some(isEkaKey) && p.tithiAM !== 10 && p.tithiAM !== 25) return "";
+      const ekaKey = p.keys.find(isEkaKey);
+      let ekaTithi = null;
+      if (ekaKey) ekaTithi = parseInt(ekaKey.split("-")[1], 10);
+      else if (p.tithiAM === 10 || p.tithiAM === 25) ekaTithi = p.tithiAM;
+      if (ekaTithi === null) return "";
       const nextDt = new Date(p.y, p.m, p.d + 1);
       const np = getDayPanchang(nextDt.getFullYear(), nextDt.getMonth(), nextDt.getDate(), false);
-      const dwadashiEnd = findPhaseTime(np.st.sunrise, (((p.tithiAM + 2) % 30) * 12) % 360);
+      const dwadashiEndDeg = (((ekaTithi + 2) % 30) * 12) % 360;
+      const dwadashiEnd = findPhaseTime(new Date(np.st.sunrise.getTime() + 12 * 3600000), dwadashiEndDeg);
+      const endStr = dwadashiEnd.toDateString() === nextDt.toDateString() ? fmtTime(dwadashiEnd) : fmtDT(dwadashiEnd);
       const L = I18N[lang];
-      return `<div class="row"><span class="lbl">${L.parana}</span><span class="val mint">${fmtTime(np.st.sunrise)} → ${fmtTime(dwadashiEnd)}<br><small style="color:var(--muted)">(${L.beforeDwadashi})</small></span></div>`;
+      return `<div class="row"><span class="lbl">${L.parana}</span><span class="val mint">${fmtTime(np.st.sunrise)} → ${endStr}<br><small style="color:var(--muted)">(${L.beforeDwadashi})</small></span></div>`;
     }
 
     function renderSelectedDetail() {
@@ -1765,7 +1800,7 @@
     function renderActiveView() {
       applyStaticLabels();
       renderHeader();
-      if (currentTab === "calendar") { renderBanner(); renderCalendar(); }
+      if (currentTab === "calendar") { renderCalendar(); setTimeout(renderBanner, 0); }
       else if (currentTab === "panchang" && !renderedTabs.has("panchang")) { renderPanchangTab(); renderedTabs.add("panchang"); }
       else if (currentTab === "muhurat" && !renderedTabs.has("muhurat")) { renderMuhurat(currentMuhurat); renderedTabs.add("muhurat"); }
       else if (currentTab === "astro" && !renderedTabs.has("astro")) { renderPlanets(); renderTransitsAndEclipses(); renderedTabs.add("astro"); }
