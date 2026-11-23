@@ -626,7 +626,7 @@
         search:"Search festivals or Ekadashi…", fAll:"All", fFest:"Festivals", fEka:"Ekadashi", noMatch:"No matching observances.",
         exportICS:"📅 Export All Upcoming (.ics)", myRashi:"My Rashi (Chandra Bala)", rashiNone:"My Rashi: Not Set (Optional)",
         chandraOk:"Chandra Bala favourable for your Rashi", panchakCaution:"Caution: Panchak", gandCaution:"Caution: Gandmool",
-        parana:"Ekadashi Parana (Next Day)", beforeDwadashi:"before Dwadashi ends",
+        parana:"Ekadashi Parana (Next Day)", beforeDwadashi:"before Dwadashi ends", afterHariVasara:"after Hari Vasara, before Dwadashi ends", dwadashiBeforeSR:"after sunrise (Dwadashi ends before sunrise)",
         adhikaNote:"Adhika Masa (Purushottam Masa): Ideal for charity, mantra japa, and devotion; auspicious ceremonies and regular festivals are paused.",
         disclaimer:"Timings are computed astronomically for your location (default: Madhubani). For weddings, havan, and vrat parana, please confirm with your local Panji / Pandit.",
         copied:"Copied to clipboard", calSaved:"Calendar file downloaded"
@@ -662,7 +662,7 @@
         search:"पर्व या एकादशी खोजें…", fAll:"सभी", fFest:"पर्व", fEka:"एकादशी", noMatch:"कोई पर्व नहीं मिला।",
         exportICS:"📅 सभी आगामी पर्व जोड़ें (.ics)", myRashi:"मेरी राशि (चंद्र बल हेतु)", rashiNone:"मेरी राशि: चुनी नहीं (वैकल्पिक)",
         chandraOk:"आपकी राशि हेतु चंद्र बल अनुकूल", panchakCaution:"सावधानी: पंचक", gandCaution:"सावधानी: गंडमूल",
-        parana:"एकादशी पारण (अगले दिन)", beforeDwadashi:"द्वादशी समाप्ति से पूर्व",
+        parana:"एकादशी पारण (अगले दिन)", beforeDwadashi:"द्वादशी समाप्ति से पूर्व", afterHariVasara:"हरि वासर के बाद, द्वादशी समाप्ति से पूर्व", dwadashiBeforeSR:"सूर्योदय के बाद (द्वादशी सूर्योदय से पूर्व समाप्त)",
         adhikaNote:"अधिक मास (पुरुषोत्तम मास): जप, तप व दान हेतु अत्यंत फलदायी; मांगलिक कार्य एवं नियमित पर्व इस मास में नहीं होते।",
         disclaimer:"सभी समय आपके स्थान (डिफ़ॉल्ट: मधुबनी) के अनुसार खगोलीय गणना पर आधारित हैं। विवाह, हवन व व्रत पारण हेतु स्थानीय पंचांग/पंडित जी से पुष्टि अवश्य करें।",
         copied:"कॉपी हो गया", calSaved:"कैलेंडर फ़ाइल डाउनलोड हुई"
@@ -768,10 +768,10 @@
     const FEST_RULE = {
       "6-29":"pradosh", "6-27":"pradosh", "11-14":"pradosh",
       "6-18":"moonrise", "5-3":"moonrise",
-      "6-14":"nishita", "4-22":"nishita", "10-28":"nishita",
+      "6-14":"nishita", "4-22":"janmashtami", "10-28":"nishita",
       "7-5":"sunset", "0-8":"noon", "6-9":"aparahna"
     };
-    Object.keys(EKADASHI).concat(Object.keys(LUNAR_FESTIVALS).filter(isEkaKey)).forEach(k => { FEST_RULE[k] = "pratah"; });
+    Object.keys(EKADASHI).concat(Object.keys(LUNAR_FESTIVALS).filter(isEkaKey)).forEach(k => { FEST_RULE[k] = "sunrise"; });
 
     const EXPLAINERS = {
       "0-0":  { en:"Marks the Hindu Lunar New Year (Chaitra Shukla Pratipada) and the start of Chaitra Navratri.", hi:"हिन्दू नववर्ष (चैत्र शुक्ल प्रतिपदा) और चैत्र नवरात्रि के प्रारंभ का दिन।" },
@@ -866,6 +866,43 @@
         hiSteps:["द्वार पूजा: मुख्य द्वार को आम के पत्तों व गेंदे के तोरण से सजाकर द्वार पूजन करें।","कलश प्रवेश: दाहिना पैर पहले रखते हुए जल, नारियल व आम्रपल्लव युक्त कलश लेकर गृह प्रवेश करें।","वास्तु व नवग्रह हवन: स्थान की शुद्धि हेतु गणेश पूजन, वास्तु पुरुष पूजन एवं हवन करें।","दूध उबालना: नए बर्तन में दूध उबालकर थोड़ा उफनने दें—यह घर में सुख-समृद्धि का प्रतीक है।"] }
     ];
 
+    /* ======================= Timezone-Safe Date Helpers ======================= */
+    const tzOffsetCache = new Map();
+    function getTzOffsetMs(y, m, d, tz) {
+      const k = `${y}-${m}-${d}-${tz}`;
+      if (tzOffsetCache.has(k)) return tzOffsetCache.get(k);
+      let off;
+      try {
+        const utc = new Date(Date.UTC(y, m, d, 12, 0, 0));
+        const parts = new Intl.DateTimeFormat("en-US", {
+          timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit",
+          hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false
+        }).formatToParts(utc);
+        const get = t => parseInt(parts.find(p => p.type === t).value, 10);
+        const h = get("hour") % 24;
+        off = Date.UTC(get("year"), get("month") - 1, get("day"), h, get("minute"), get("second")) - utc.getTime();
+      } catch {
+        off = Math.round(LON / 15) * 3600000;
+      }
+      tzOffsetCache.set(k, off);
+      return off;
+    }
+    function tzParts(dt) {
+      try {
+        const parts = new Intl.DateTimeFormat("en-US", {
+          timeZone: TZ, year: "numeric", month: "numeric", day: "numeric",
+          hour: "2-digit", minute: "2-digit", hour12: false
+        }).formatToParts(dt);
+        const get = t => parseInt(parts.find(p => p.type === t).value, 10);
+        return { y: get("year"), m: get("month") - 1, d: get("day"), hh: get("hour") % 24, mm: get("minute") };
+      } catch {
+        return { y: dt.getFullYear(), m: dt.getMonth(), d: dt.getDate(), hh: dt.getHours(), mm: dt.getMinutes() };
+      }
+    }
+    const nowInTZ = () => tzParts(new Date());
+    const sameDateInTZ = (dt, y, m, d) => { const p = tzParts(dt); return p.y === y && p.m === m && p.d === d; };
+    const dowOf = (y, m, d) => new Date(Date.UTC(y, m, d)).getUTCDay();
+
     /* ======================= Precision Astronomy + Offline Fallback ======================= */
     const HAS_ASTRO = typeof Astronomy !== "undefined";
     const toRad = d => d * Math.PI / 180;
@@ -945,15 +982,23 @@
       return { rashiIdx: Math.floor(sidAsc / 30), deg: (sidAsc % 30).toFixed(1) };
     }
 
+    function getPhaseDeg(dt) {
+      if (HAS_ASTRO && typeof Astronomy.MoonPhase === "function") return norm(Astronomy.MoonPhase(dt));
+      return norm(getMoonLon(dt) - getSunLon(dt));
+    }
+
     function findPhaseTime(refDate, targetDeg) {
+      const curDiff = getPhaseDeg(refDate);
+      const err0 = ((targetDeg - curDiff + 540) % 360) - 180;
+      const approxMs = refDate.getTime() + (err0 / 12.19075) * 86400000;
       if (HAS_ASTRO) {
-        const t = Astronomy.SearchMoonPhase(targetDeg, new Date(refDate.getTime() - 28 * 3600000), 3);
+        const t = Astronomy.SearchMoonPhase(targetDeg, new Date(approxMs - 18 * 3600000), 2);
         if (t) return t.date;
       }
-      let ms = refDate.getTime();
+      let ms = approxMs;
       for (let i = 0; i < 10; i++) {
         const dt = new Date(ms);
-        const diff = norm(getMoonLon(dt) - getSunLon(dt));
+        const diff = getPhaseDeg(dt);
         const err = ((targetDeg - diff + 540) % 360) - 180;
         ms += (err / 12.19075) * 86400000;
       }
@@ -961,9 +1006,9 @@
     }
 
     function getRiseSet(y, m, d) {
-      const k = `RS-${y}-${m}-${d}-${locKey}`;
+      const k = `RS-${y}-${m}-${d}-${locKey}-${TZ}`;
       if (memo.has(k)) return memo.get(k);
-      const base = new Date(y, m, d, 0, 0, 0);
+      const base = new Date(Date.UTC(y, m, d, 0, 0, 0) - getTzOffsetMs(y, m, d, TZ));
       let sr = null, ss = null, mr = null, ms = null;
       if (HAS_ASTRO) {
         const obs = new Astronomy.Observer(LAT, LON, 0);
@@ -976,7 +1021,7 @@
         if (r2) mr = r2.date;
         if (s2) ms = s2.date;
       }
-      if (!sr || !ss) {
+      if (!sr || !ss || ss <= sr) {
         const doy = Math.floor((Date.UTC(y, m, d) - Date.UTC(y, 0, 0)) / 86400000);
         const B = toRad((360 / 365) * (doy - 81));
         const eot = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
@@ -988,7 +1033,7 @@
         sr = new Date(utcBase + Math.round(noonMin - H) * 60000);
         ss = new Date(utcBase + Math.round(noonMin + H) * 60000);
       }
-      const seg = (ss - sr) / 8, dow = base.getDay();
+      const seg = (ss - sr) / 8, dow = dowOf(y, m, d);
       const mid = new Date((sr.getTime() + ss.getTime()) / 2);
       const rahuSeg = [7,1,6,4,5,3,2][dow], yamaSeg = [4,3,2,1,0,6,5][dow], gulikaSeg = [6,5,4,3,2,1,0][dow];
       const res = {
@@ -1028,7 +1073,7 @@
         const L = LUNATIONS[i];
         if (ms >= L.start && ms < L.end) return L;
       }
-      const diff = norm(getMoonLon(dt) - getSunLon(dt));
+      const diff = getPhaseDeg(dt);
       let s = findNewMoonMs(new Date(ms - (diff / 12.19075) * 86400000));
       if (s > ms) s = findNewMoonMs(new Date(s - 29.53059 * 86400000));
       let e = findNewMoonMs(new Date(s + 29.53059 * 86400000));
@@ -1043,7 +1088,7 @@
 
     function astroAt(dt) {
       const ayan = getAyanamsa(dt), sun = getSunLon(dt), moon = getMoonLon(dt);
-      const sunSid = norm(sun - ayan), moonSid = norm(moon - ayan), diff = norm(moon - sun);
+      const sunSid = norm(sun - ayan), moonSid = norm(moon - ayan), diff = getPhaseDeg(dt);
       const tithiIdx = Math.floor(diff / 12);
       const lun = getLunation(dt);
       const isAdhika = lun.isAdhika;
@@ -1087,21 +1132,46 @@
       const k = `FK-${y}-${m}-${d}-${locKey}`;
       if (memo.has(k)) return memo.get(k);
       const keys = [], rules = new Set(["sunrise", ...Object.values(FEST_RULE)]);
-      const prevD = new Date(y, m, d - 1), nextD = new Date(y, m, d + 1);
+      const prevD = new Date(Date.UTC(y, m, d - 1)), nextD = new Date(Date.UTC(y, m, d + 1));
 
       for (const rule of rules) {
+        if (rule === "janmashtami") continue;
         const cur = ruleCheck(y, m, d, rule);
         if (cur.adhika) continue;
         const fKey = `${cur.amanta}-${cur.tithi}`;
         if (!isFestKey(fKey) || (FEST_RULE[fKey] || "sunrise") !== rule) continue;
-        const prev = ruleCheck(prevD.getFullYear(), prevD.getMonth(), prevD.getDate(), rule);
+        const prev = ruleCheck(prevD.getUTCFullYear(), prevD.getUTCMonth(), prevD.getUTCDate(), rule);
         if (!prev.adhika && `${prev.amanta}-${prev.tithi}` === fKey) continue;
         keys.push(fKey);
       }
 
+      // Krishna Janmashtami (4-22): prefer Ashtami + Rohini Nakshatra (nakIdx === 3) at Nishita or Sunrise-Ashtami + Rohini-Nishita
+      const isJanmaDay = (yy, mm, dd) => {
+        const stJ = getRiseSet(yy, mm, dd);
+        const srJ = astroAt(stJ.sunrise);
+        const niJ = astroAt(new Date(stJ.noon.getTime() + 12 * 3600000));
+        if (srJ.isAdhika || niJ.isAdhika) return false;
+        const ashSR = srJ.amantaIdx === 4 && srJ.tithiIdx === 22;
+        const ashNI = niJ.amantaIdx === 4 && niJ.tithiIdx === 22;
+        const rohNI = niJ.nakIdx === 3;
+        if (ashSR && rohNI) return true;
+        if (ashNI) {
+          // If tomorrow has Sunrise-Ashtami + Rohini-Nishita, defer to tomorrow (e.g. 25 Aug 2027)
+          const tm = new Date(Date.UTC(yy, mm, dd + 1));
+          const stN = getRiseSet(tm.getUTCFullYear(), tm.getUTCMonth(), tm.getUTCDate());
+          const srN = astroAt(stN.sunrise), niN = astroAt(new Date(stN.noon.getTime() + 12 * 3600000));
+          if (!srN.isAdhika && srN.amantaIdx === 4 && srN.tithiIdx === 22 && niN.nakIdx === 3) return false;
+          return true;
+        }
+        return false;
+      };
+      if (isJanmaDay(y, m, d) && !isJanmaDay(prevD.getUTCFullYear(), prevD.getUTCMonth(), prevD.getUTCDate())) {
+        keys.push("4-22");
+      }
+
       // Kshaya tithi (skipped between two sunrises)
       const c0 = ruleCheck(y, m, d, "sunrise");
-      const c1 = ruleCheck(nextD.getFullYear(), nextD.getMonth(), nextD.getDate(), "sunrise");
+      const c1 = ruleCheck(nextD.getUTCFullYear(), nextD.getUTCMonth(), nextD.getUTCDate(), "sunrise");
       if (!c0.adhika && (c1.tithi - c0.tithi + 30) % 30 === 2) {
         const tk = (c0.tithi + 1) % 30, kk = `${c0.amanta}-${tk}`;
         if (tk !== 0 && isFestKey(kk) && (FEST_RULE[kk] || "sunrise") === "sunrise" && !keys.includes(kk)) keys.push(kk);
@@ -1109,7 +1179,7 @@
 
       // Dynamic Makar Sankranti (Sun enters sidereal Makara 270 deg)
       const ssNow = astroAt(getRiseSet(y, m, d).sunset).sunSid;
-      const ssPrev = astroAt(getRiseSet(prevD.getFullYear(), prevD.getMonth(), prevD.getDate()).sunset).sunSid;
+      const ssPrev = astroAt(getRiseSet(prevD.getUTCFullYear(), prevD.getUTCMonth(), prevD.getUTCDate()).sunset).sunSid;
       if (ssNow >= 270 && ssNow < 300 && ssPrev < 270) keys.push("makar");
 
       memo.set(k, keys);
@@ -1125,7 +1195,7 @@
       const keys = computeFestKeys(y, m, d);
       const festKey = keys.find(isMajor) || keys[0] || null;
       const res = {
-        ...aSR, y, m, d, dow: new Date(y, m, d).getDay(), st, noon: aNoon, pm: aPM,
+        ...aSR, y, m, d, dow: dowOf(y, m, d), st, noon: aNoon, pm: aPM,
         tithiAM: aSR.tithiIdx, tithiPM: aPM.tithiIdx, nakPM: aPM.nakIdx,
         hasDualTithi: aSR.tithiIdx !== aPM.tithiIdx,
         vikramSamvat, shakaSamvat: vikramSamvat - 135,
@@ -1439,13 +1509,25 @@
       if (ekaKey) ekaTithi = parseInt(ekaKey.split("-")[1], 10);
       else if (p.tithiAM === 10 || p.tithiAM === 25) ekaTithi = p.tithiAM;
       if (ekaTithi === null) return "";
-      const nextDt = new Date(p.y, p.m, p.d + 1);
-      const np = getDayPanchang(nextDt.getFullYear(), nextDt.getMonth(), nextDt.getDate(), false);
+      const nextU = new Date(Date.UTC(p.y, p.m, p.d + 1));
+      const ny = nextU.getUTCFullYear(), nm = nextU.getUTCMonth(), nd = nextU.getUTCDate();
+      const np = getDayPanchang(ny, nm, nd, false);
+      const dwadashiStartDeg = (((ekaTithi + 1) % 30) * 12) % 360;
       const dwadashiEndDeg = (((ekaTithi + 2) % 30) * 12) % 360;
-      const dwadashiEnd = findPhaseTime(new Date(np.st.sunrise.getTime() + 12 * 3600000), dwadashiEndDeg);
-      const endStr = dwadashiEnd.toDateString() === nextDt.toDateString() ? fmtTime(dwadashiEnd) : fmtDT(dwadashiEnd);
+      const refMid = new Date(p.st.sunrise.getTime() + 18 * 3600000);
+      const dwadashiStart = findPhaseTime(refMid, dwadashiStartDeg);
+      const dwadashiEnd = findPhaseTime(new Date(dwadashiStart.getTime() + 18 * 3600000), dwadashiEndDeg);
+      const hariVasaraEnd = new Date(dwadashiStart.getTime() + (dwadashiEnd.getTime() - dwadashiStart.getTime()) / 4);
       const L = I18N[lang];
-      return `<div class="row"><span class="lbl">${L.parana}</span><span class="val mint">${fmtTime(np.st.sunrise)} → ${endStr}<br><small style="color:var(--muted)">(${L.beforeDwadashi})</small></span></div>`;
+      if (dwadashiEnd.getTime() <= np.st.sunrise.getTime()) {
+        const pratahEnd = new Date(np.st.sunrise.getTime() + (np.st.sunset.getTime() - np.st.sunrise.getTime()) / 5);
+        return `<div class="row"><span class="lbl">${L.parana}</span><span class="val mint">${fmtTime(np.st.sunrise)} → ${fmtTime(pratahEnd)}<br><small style="color:var(--muted)">(${L.dwadashiBeforeSR})</small></span></div>`;
+      }
+      const paranaStart = hariVasaraEnd.getTime() > np.st.sunrise.getTime() ? hariVasaraEnd : np.st.sunrise;
+      const startStr = sameDateInTZ(paranaStart, ny, nm, nd) ? fmtTime(paranaStart) : fmtDT(paranaStart);
+      const endStr = sameDateInTZ(dwadashiEnd, ny, nm, nd) ? fmtTime(dwadashiEnd) : fmtDT(dwadashiEnd);
+      const note = hariVasaraEnd.getTime() > np.st.sunrise.getTime() ? L.afterHariVasara : L.beforeDwadashi;
+      return `<div class="row"><span class="lbl">${L.parana}</span><span class="val mint">${startStr} → ${endStr}<br><small style="color:var(--muted)">(${note})</small></span></div>`;
     }
 
     function renderSelectedDetail() {
@@ -1460,8 +1542,8 @@
         </div>
         ${tags ? `<div style="margin-bottom:8px;">${tags}</div>` : ""}
         ${p.hasDualTithi ? `
-          <div class="row"><span class="lbl">${L.tithi} (AM)</span><span class="val mint">${L[p.tithiAM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiAM]}<br><small style="color:var(--muted)">${L.tithiEnd}: ${p.tithiEnd && p.tithiEnd.toDateString() === selectedDate.toDateString() ? fmtTime(p.tithiEnd) : fmtDT(p.tithiEnd)}</small></span></div>
-          <div class="row"><span class="lbl">${L.tithi} (PM)</span><span class="val mint">${L[p.tithiPM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiPM]}<br><small style="color:var(--muted)">${L.tithiEnd}: ${p.tithiPMEnd && p.tithiPMEnd.toDateString() === selectedDate.toDateString() ? fmtTime(p.tithiPMEnd) : fmtDT(p.tithiPMEnd)}</small></span></div>
+          <div class="row"><span class="lbl">${L.tithi} (AM)</span><span class="val mint">${L[p.tithiAM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiAM]}<br><small style="color:var(--muted)">${L.tithiEnd}: ${p.tithiEnd && sameDateInTZ(p.tithiEnd, y, m, d) ? fmtTime(p.tithiEnd) : fmtDT(p.tithiEnd)}</small></span></div>
+          <div class="row"><span class="lbl">${L.tithi} (PM)</span><span class="val mint">${L[p.tithiPM<15?'shukla':'krishna']} ${TITHIS[lang][p.tithiPM]}<br><small style="color:var(--muted)">${L.tithiEnd}: ${p.tithiPMEnd && sameDateInTZ(p.tithiPMEnd, y, m, d) ? fmtTime(p.tithiPMEnd) : fmtDT(p.tithiPMEnd)}</small></span></div>
         ` : `
           <div class="row"><span class="lbl">${L.udaya}</span><span class="val mint">${L[p.pakshaKey]} ${TITHIS[lang][p.tithiAM]}</span></div>
           <div class="row"><span class="lbl">${L.tithiStart} – ${L.tithiEnd}</span><span class="val">${fmtDT(p.tithiStart)} → ${fmtDT(p.tithiEnd)}</span></div>
@@ -1650,9 +1732,9 @@
 
     /* ======================= Astronomy Tab (Exact Date + Time) ======================= */
     function resetAstroDate() {
-      const now = new Date();
-      document.getElementById("astroDate").value = localISO(now);
-      document.getElementById("astroTime").value = localTimeISO(now);
+      const t = nowInTZ();
+      document.getElementById("astroDate").value = `${t.y}-${pad(t.m + 1)}-${pad(t.d)}`;
+      document.getElementById("astroTime").value = `${pad(t.hh)}:${pad(t.mm)}`;
       renderPlanets();
     }
 
@@ -1662,7 +1744,7 @@
       if (!dVal) return new Date();
       const [y, m, d] = dVal.split("-").map(Number);
       const [hh, mm] = tVal.split(":").map(Number);
-      return new Date(y, m - 1, d, hh || 0, mm || 0, 0);
+      return new Date(Date.UTC(y, m - 1, d, hh || 0, mm || 0, 0) - getTzOffsetMs(y, m - 1, d, TZ));
     }
 
     function renderPlanets() {
@@ -1710,37 +1792,42 @@
       const ecl = [];
       if (HAS_ASTRO) {
         const obs = new Astronomy.Observer(LAT, LON, 0);
-        let sE = Astronomy.SearchLocalSolarEclipse(base, obs), lE = Astronomy.SearchLunarEclipse(base);
-        for (let k = 0; k < 3; k++) {
-          if (sE) {
-            ecl.push({
-              dt: sE.peak.time.date,
-              kind: sE.kind + (lang === "hi" ? " सूर्य ग्रहण (स्थानीय दृश्य)" : " Solar Eclipse (Visible)"),
-              sutak: lang === "hi" ? "12 घंटे पूर्व से सूतक मान्य" : "Sutak starts 12h prior (Visible locally)"
-            });
-            sE = Astronomy.NextLocalSolarEclipse(sE.peak.time, obs);
-          }
-          if (lE) {
-            const eq = Astronomy.Equator("Moon", lE.peak.date, obs, true, true);
-            const vis = Astronomy.Horizon(lE.peak.date, obs, eq.ra, eq.dec, "normal").altitude > 0;
-            const sutakTxt = !vis
-              ? (lang === "hi" ? "लागू नहीं (यहाँ अदृश्य)" : "Not applicable (Not visible here)")
-              : (lE.kind === "penumbral"
-                ? (lang === "hi" ? "सूतक मान्य नहीं (उपच्छाया)" : "No Sutak (Penumbral)")
-                : (lang === "hi" ? "9 घंटे पूर्व से सूतक मान्य" : "Sutak starts 9h prior (Visible locally)"));
-            ecl.push({
-              dt: lE.peak.date,
-              kind: lE.kind + (lang === "hi" ? " चंद्र ग्रहण" : " Lunar Eclipse"),
-              sutak: sutakTxt
-            });
-            lE = Astronomy.NextLunarEclipse(lE.peak);
-          }
+        const endMs = base.getTime() + 48 * 30.4375 * 86400000;
+        const eclBase = new Date(); let sE = Astronomy.SearchLocalSolarEclipse(eclBase, obs);
+        for (let k = 0; k < 10 && sE; k++) {
+          const sDt = (sE.peak.time || sE.peak).date;
+          if (sDt.getTime() > endMs) break;
+          ecl.push({
+            dt: sDt,
+            kind: sE.kind + (lang === "hi" ? " सूर्य ग्रहण (स्थानीय दृश्य)" : " Solar Eclipse (Visible)"),
+            sutak: lang === "hi" ? "12 घंटे पूर्व से सूतक मान्य" : "Sutak starts 12h prior (Visible locally)"
+          });
+          sE = Astronomy.NextLocalSolarEclipse(sE.peak.time || sE.peak, obs);
+        }
+        let lE = Astronomy.SearchLunarEclipse(eclBase);
+        for (let k = 0; k < 15 && lE; k++) {
+          const lDt = lE.peak.date;
+          if (lDt.getTime() > endMs) break;
+          const eq = Astronomy.Equator("Moon", lDt, obs, true, true);
+          const vis = Astronomy.Horizon(lDt, obs, eq.ra, eq.dec, "normal").altitude > 0;
+          const sutakTxt = !vis
+            ? (lang === "hi" ? "लागू नहीं (यहाँ अदृश्य)" : "Not applicable (Not visible here)")
+            : (lE.kind === "penumbral"
+              ? (lang === "hi" ? "सूतक मान्य नहीं (उपच्छाया)" : "No Sutak (Penumbral)")
+              : (lang === "hi" ? "9 घंटे पूर्व से सूतक मान्य" : "Sutak starts 9h prior (Visible locally)"));
+          ecl.push({
+            dt: lDt,
+            kind: lE.kind + (lang === "hi" ? " चंद्र ग्रहण" : " Lunar Eclipse"),
+            sutak: sutakTxt
+          });
+          lE = Astronomy.NextLunarEclipse(lE.peak);
         }
         ecl.sort((a, b) => a.dt - b.dt);
       }
-      document.getElementById("eclipseList").innerHTML = ecl.length ? ecl.slice(0, 6).map(e => `
+      const fmtEclDate = dt => { const p = tzParts(dt); return `${L.gDaysShort[dowOf(p.y, p.m, p.d)]}, ${p.d} ${L.gMonthsShort[p.m]} ${p.y}`; };
+      document.getElementById("eclipseList").innerHTML = ecl.length ? ecl.slice(0, 10).map(e => `
         <div class="list-item">
-          <div><div class="li-name" style="text-transform:capitalize;">${e.kind}</div><div class="li-sub">${fmtShortDate(e.dt)} • Peak ${fmtTime(e.dt)}<br><b>${L.sutak}:</b> ${e.sutak}</div></div>
+          <div><div class="li-name" style="text-transform:capitalize;">${e.kind}</div><div class="li-sub">${fmtEclDate(e.dt)} • Peak ${fmtTime(e.dt)}<br><b>${L.sutak}:</b> ${e.sutak}</div></div>
         </div>`).join("") : `<div class="note">Connect once to load astronomy-engine for dynamically computed eclipses.</div>`;
     }
 
@@ -1936,9 +2023,9 @@
       document.body.classList.add("large-font");
       document.getElementById("fontBtn").classList.add("active");
     }
-    const bootNow = new Date();
-    document.getElementById("astroDate").value = localISO(bootNow);
-    document.getElementById("astroTime").value = localTimeISO(bootNow);
+    const bootT = nowInTZ();
+    document.getElementById("astroDate").value = `${bootT.y}-${pad(bootT.m + 1)}-${pad(bootT.d)}`;
+    document.getElementById("astroTime").value = `${pad(bootT.hh)}:${pad(bootT.mm)}`;
     renderActiveView();
     initAutoLocation();
   </script>
