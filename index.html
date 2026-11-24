@@ -580,7 +580,7 @@
     let LON = Number(sGet("mc_lon", DEFAULT_LOC.lon));
     let TZ  = sGet("mc_tz", DEFAULT_LOC.tz);
     if (Number.isNaN(LAT) || Number.isNaN(LON)) { LAT = DEFAULT_LOC.lat; LON = DEFAULT_LOC.lon; TZ = DEFAULT_LOC.tz; }
-    let locKey = `${LAT.toFixed(3)},${LON.toFixed(3)}`;
+    let locKey = `${LAT.toFixed(3)},${LON.toFixed(3)},${TZ}`;
 
     let lang = sGet("mc_lang", "en") === "hi" ? "hi" : "en";
     let theme = sGet("mc_theme", "dark");
@@ -759,6 +759,8 @@
       if (!LUNAR_FESTIVALS[`${i}-10`]) EKADASHI[`${i}-10`] = { en:`${n[0]} Ekadashi`, hi:`${n[1]} एकादशी` };
       if (!LUNAR_FESTIVALS[`${i}-25`]) EKADASHI[`${i}-25`] = { en:`${n[2]} Ekadashi`, hi:`${n[3]} एकादशी` };
     });
+    EKADASHI["adhika-10"] = { en:"Padmini Ekadashi (Adhika)", hi:"पद्मिनी एकादशी (अधिक)" };
+    EKADASHI["adhika-25"] = { en:"Parama Ekadashi (Adhika)", hi:"परमा एकादशी (अधिक)" };
 
     const isMajor = k => !!LUNAR_FESTIVALS[k];
     const isEkaKey = k => /-(10|25)$/.test(k);
@@ -900,6 +902,7 @@
       }
     }
     const nowInTZ = () => tzParts(new Date());
+    const todayInTZ = () => { const t = nowInTZ(); return new Date(t.y, t.m, t.d); };
     const sameDateInTZ = (dt, y, m, d) => { const p = tzParts(dt); return p.y === y && p.m === m && p.d === d; };
     const dowOf = (y, m, d) => new Date(Date.UTC(y, m, d)).getUTCDay();
 
@@ -1137,7 +1140,15 @@
       for (const rule of rules) {
         if (rule === "janmashtami") continue;
         const cur = ruleCheck(y, m, d, rule);
-        if (cur.adhika) continue;
+        if (cur.adhika) {
+          // Observe Padmini (Shukla) and Parama (Krishna) Ekadashis in Adhika Masa
+          if (rule === "sunrise" && (cur.tithi === 10 || cur.tithi === 25)) {
+            const aKey = `adhika-${cur.tithi}`;
+            const prev = ruleCheck(prevD.getUTCFullYear(), prevD.getUTCMonth(), prevD.getUTCDate(), rule);
+            if (!(prev.adhika && prev.tithi === cur.tithi)) keys.push(aKey);
+          }
+          continue;
+        }
         const fKey = `${cur.amanta}-${cur.tithi}`;
         if (!isFestKey(fKey) || (FEST_RULE[fKey] || "sunrise") !== rule) continue;
         const prev = ruleCheck(prevD.getUTCFullYear(), prevD.getUTCMonth(), prevD.getUTCDate(), rule);
@@ -1145,7 +1156,7 @@
         keys.push(fKey);
       }
 
-      // Krishna Janmashtami (4-22): prefer Ashtami + Rohini Nakshatra (nakIdx === 3) at Nishita or Sunrise-Ashtami + Rohini-Nishita
+      // Krishna Janmashtami (4-22): Nishita Ashtami (preferring Rohini); fallback to Sunrise Ashtami if midnight misses both days (e.g. Aug 2025)
       const isJanmaDay = (yy, mm, dd) => {
         const stJ = getRiseSet(yy, mm, dd);
         const srJ = astroAt(stJ.sunrise);
@@ -1156,12 +1167,18 @@
         const rohNI = niJ.nakIdx === 3;
         if (ashSR && rohNI) return true;
         if (ashNI) {
-          // If tomorrow has Sunrise-Ashtami + Rohini-Nishita, defer to tomorrow (e.g. 25 Aug 2027)
           const tm = new Date(Date.UTC(yy, mm, dd + 1));
           const stN = getRiseSet(tm.getUTCFullYear(), tm.getUTCMonth(), tm.getUTCDate());
           const srN = astroAt(stN.sunrise), niN = astroAt(new Date(stN.noon.getTime() + 12 * 3600000));
           if (!srN.isAdhika && srN.amantaIdx === 4 && srN.tithiIdx === 22 && niN.nakIdx === 3) return false;
           return true;
+        }
+        if (ashSR) {
+          // Fallback: if neither yesterday's nor today's Nishita had Ashtami, use Sunrise Ashtami day
+          const ym = new Date(Date.UTC(yy, mm, dd - 1));
+          const stP = getRiseSet(ym.getUTCFullYear(), ym.getUTCMonth(), ym.getUTCDate());
+          const niP = astroAt(new Date(stP.noon.getTime() + 12 * 3600000));
+          if (!(niP.amantaIdx === 4 && niP.tithiIdx === 22)) return true;
         }
         return false;
       };
@@ -1243,7 +1260,11 @@
         return EXPLAINERS["makar"][lang];
       }
 
-      if (ref.isAdhika) return I18N[lang].adhikaNote;
+      if (ref.isAdhika) {
+        if (t === 10) return hi ? "पद्मिनी एकादशी (अधिक मास शुक्ल पक्ष)—पुरुषोत्तम मास की अत्यंत फलदायी एकादशी, भगवान विष्णु को समर्पित।" : "Padmini Ekadashi (Adhika Shukla)—observed once every ~3 years in Purushottam Masa for Lord Vishnu's grace.";
+        if (t === 25) return hi ? "परमा एकादशी (अधिक मास कृष्ण पक्ष)—अधिक मास में पड़ने वाली विशेष एकादशी, दान व भक्ति हेतु श्रेष्ठ।" : "Parama Ekadashi (Adhika Krishna)—a rare Purushottam Masa Ekadashi dedicated to Lord Vishnu and charity.";
+        return I18N[lang].adhikaNote;
+      }
       if (t === 10 || t === 25) {
         const ekaObj = EKADASHI[activeFestKey] || LUNAR_FESTIVALS[activeFestKey];
         const nm = ekaObj ? ekaObj[lang] : (hi ? "एकादशी" : "Ekadashi");
@@ -1360,34 +1381,50 @@
       shareText(`${title}\n(${sub})\n\n${steps}\n\n— Mithila Calendar`);
     }
 
-    /* ======================= Silent Auto-GPS (Fallback: Madhubani) ======================= */
-    function initAutoLocation() {
-      if (!navigator.geolocation) return;
+    /* ======================= Smart Auto-GPS (Fallback: Madhubani) ======================= */
+    function fetchGPS() {
       navigator.geolocation.getCurrentPosition(pos => {
+        sSet("mc_gps_done", "1");
         const nLat = pos.coords.latitude, nLon = pos.coords.longitude;
-        if (Math.abs(nLat - LAT) > 0.05 || Math.abs(nLon - LON) > 0.05) {
-          LAT = nLat; LON = nLon;
-          TZ = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
-          locKey = `${LAT.toFixed(3)},${LON.toFixed(3)}`;
+        const nTz = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
+        if (Math.abs(nLat - LAT) > 0.05 || Math.abs(nLon - LON) > 0.05 || nTz !== TZ) {
+          LAT = nLat; LON = nLon; TZ = nTz;
+          locKey = `${LAT.toFixed(3)},${LON.toFixed(3)},${TZ}`;
           sSet("mc_lat", LAT); sSet("mc_lon", LON); sSet("mc_tz", TZ);
           memo.clear(); upCache = null; renderedTabs.clear();
+          viewDate = todayInTZ(); selectedDate = todayInTZ();
+          resetAstroDate();
           renderActiveView();
         }
       }, () => {
-        // Keep stored or default Madhubani silently
+        sSet("mc_gps_done", "1"); // Remember denial/error; stay on Madhubani without re-prompting
       }, { enableHighAccuracy: false, timeout: 8000, maximumAge: 3600000 });
+    }
+    function initAutoLocation() {
+      if (!navigator.geolocation) return;
+      if (navigator.permissions && navigator.permissions.query) {
+        navigator.permissions.query({ name: "geolocation" }).then(st => {
+          if (st.state === "granted") fetchGPS();
+          else if (st.state === "prompt" && sGet("mc_gps_done", "0") !== "1") fetchGPS();
+        }).catch(() => {
+          if (sGet("mc_gps_done", "0") !== "1") fetchGPS();
+        });
+      } else if (sGet("mc_gps_done", "0") !== "1") {
+        fetchGPS();
+      }
     }
 
     /* ======================= State & Upcoming Events ======================= */
-    let viewDate = new Date(), selectedDate = new Date();
+    let viewDate = todayInTZ(), selectedDate = todayInTZ();
     let finderPaksha = "Any", finderTithi = 10, activeQuickIdx = 0;
 
     function getUpcomingEvents() {
-      const todayKey = `${localISO(new Date())}-${locKey}`;
+      const t0 = nowInTZ();
+      const todayKey = `${t0.y}-${t0.m}-${t0.d}-${locKey}`;
       if (upCache && upCache.key === todayKey) return upCache.list;
-      const list = [], seen = new Set(), base = new Date(); base.setHours(0,0,0,0);
+      const list = [], seen = new Set();
       for (let i = 0; i <= 380; i++) {
-        const dt = new Date(base.getTime() + i * 86400000);
+        const dt = new Date(t0.y, t0.m, t0.d + i);
         const p = getDayPanchang(dt.getFullYear(), dt.getMonth(), dt.getDate(), false);
         p.keys.forEach(k => {
           const id = k + (isMajor(k) ? "" : `@${i}`);
@@ -1426,9 +1463,9 @@
     }
 
     function renderHeader() {
-      const now = new Date(), p = getDayPanchang(now.getFullYear(), now.getMonth(), now.getDate(), false), L = I18N[lang];
+      const t = nowInTZ(), p = getDayPanchang(t.y, t.m, t.d, false), L = I18N[lang];
       document.getElementById("topSub").innerText = `${masaLabel(p)} • ${L.vs} ${p.vikramSamvat} • ${L.shaka} ${p.shakaSamvat}`;
-      const onToday = selectedDate.toDateString() === now.toDateString() && viewDate.getMonth() === now.getMonth() && viewDate.getFullYear() === now.getFullYear();
+      const onToday = selectedDate.getFullYear() === t.y && selectedDate.getMonth() === t.m && selectedDate.getDate() === t.d && viewDate.getMonth() === t.m && viewDate.getFullYear() === t.y;
       document.getElementById("todayBtn").classList.toggle("dim", onToday);
     }
 
@@ -1459,7 +1496,7 @@
       const vsStr = fP.vikramSamvat === lP.vikramSamvat ? `${L.vs} ${fP.vikramSamvat}` : `${L.vs} ${fP.vikramSamvat} – ${lP.vikramSamvat}`; document.getElementById("monthHindu").innerText = `${fName === lName ? fName : fName + " – " + lName} • ${vsStr}`;
 
       const firstDay = new Date(y, m, 1).getDay();
-      const todayStr = new Date().toDateString(), selStr = selectedDate.toDateString();
+      const todayStr = todayInTZ().toDateString(), selStr = selectedDate.toDateString();
 
       let html = L.dows.map((d, i) => `<div class="dow ${(i===0||i===6)?'wknd':''}">${d}</div>`).join("");
       for (let i = 0; i < firstDay; i++) html += "<div></div>";
@@ -1565,8 +1602,8 @@
         </div>`;
 
       // Dedicated Why This Day Matters Card (switches to new/second tithi if current time has transitioned)
-      const now = new Date();
-      const isTodaySel = selectedDate.toDateString() === now.toDateString();
+      const now = new Date(), tNow = nowInTZ();
+      const isTodaySel = selectedDate.getFullYear() === tNow.y && selectedDate.getMonth() === tNow.m && selectedDate.getDate() === tNow.d;
       let activeAstro = null;
       if (isTodaySel) {
         const curA = astroAt(now);
@@ -1600,7 +1637,7 @@
 
     /* ======================= Panchang Tab (Live Now) ======================= */
     function renderPanchangTab() {
-      const now = new Date(), p = getDayPanchang(now.getFullYear(), now.getMonth(), now.getDate(), false);
+      const now = new Date(), tNow = nowInTZ(), p = getDayPanchang(tNow.y, tNow.m, tNow.d, false);
       const a = astroAt(now), st = p.st, L = I18N[lang];
       const ts = findPhaseTime(now, a.tithiIdx * 12), te = findPhaseTime(now, ((a.tithiIdx + 1) * 12) % 360);
       const dosh = getDoshas(a);
@@ -1682,10 +1719,10 @@
       document.getElementById("selRashi").innerHTML = `<option value="-1" ${myRashi<0?'selected':''}>${L.rashiNone}</option>` +
         RASHIS[lang].map((r, i) => `<option value="${i}" ${i===myRashi?'selected':''}>${L.myRashi.split(" (")[0]}: ${r}</option>`).join("");
 
-      const base = new Date(); base.setHours(0,0,0,0);
+      const t0 = nowInTZ();
       const results = [];
       for (let i = 0; i <= 90 && results.length < 10; i++) {
-        const dt = new Date(base.getTime() + i * 86400000);
+        const dt = new Date(t0.y, t0.m, t0.d + i);
         const p = getDayPanchang(dt.getFullYear(), dt.getMonth(), dt.getDate(), false), n = p.noon;
         if (p.isAdhika) continue;
         const t15 = n.tithiIdx % 15;
@@ -1825,7 +1862,7 @@
         ecl.sort((a, b) => a.dt - b.dt);
       }
       const fmtEclDate = dt => { const p = tzParts(dt); return `${L.gDaysShort[dowOf(p.y, p.m, p.d)]}, ${p.d} ${L.gMonthsShort[p.m]} ${p.y}`; };
-      document.getElementById("eclipseList").innerHTML = ecl.length ? ecl.slice(0, 10).map(e => `
+      document.getElementById("eclipseList").innerHTML = ecl.length ? ecl.map(e => `
         <div class="list-item">
           <div><div class="li-name" style="text-transform:capitalize;">${e.kind}</div><div class="li-sub">${fmtEclDate(e.dt)} • Peak ${fmtTime(e.dt)}<br><b>${L.sutak}:</b> ${e.sutak}</div></div>
         </div>`).join("") : `<div class="note">Connect once to load astronomy-engine for dynamically computed eclipses.</div>`;
@@ -1870,10 +1907,10 @@
         activeQuickIdx = -1;
         document.querySelectorAll("#quickChips .chip").forEach(c => c.classList.remove("active"));
       }
-      const base = new Date(); base.setHours(0,0,0,0);
+      const t0 = nowInTZ();
       let res = null;
       for (let i = 0; i <= 60; i++) {
-        const dt = new Date(base.getTime() + i * 86400000);
+        const dt = new Date(t0.y, t0.m, t0.d + i);
         const p = getDayPanchang(dt.getFullYear(), dt.getMonth(), dt.getDate(), false);
         const matchAM = (p.tithiAM % 15) === finderTithi && (finderPaksha === "Any" || (p.tithiAM < 15 ? "shukla" : "krishna") === finderPaksha);
         const matchPM = p.hasDualTithi && (p.tithiPM % 15) === finderTithi && (finderPaksha === "Any" || (p.tithiPM < 15 ? "shukla" : "krishna") === finderPaksha);
@@ -1961,7 +1998,7 @@
     }
     function selectDay(y, m, d) { selectedDate = new Date(y, m, d); renderCalendar(); }
     function changeMonth(delta) { viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + delta, 1); renderCalendar(); }
-    function goToday() { viewDate = new Date(); selectedDate = new Date(); renderCalendar(); switchTab("calendar"); }
+    function goToday() { viewDate = todayInTZ(); selectedDate = todayInTZ(); renderCalendar(); switchTab("calendar"); }
     function jumpToDate(y, m, d) { viewDate = new Date(y, m, 1); selectedDate = new Date(y, m, d); renderCalendar(); switchTab("calendar"); }
 
     function toggleJumpBar() {
@@ -1996,14 +2033,14 @@
       if (Math.abs(dx) > 55 && Math.abs(dy) < 45) changeMonth(dx < 0 ? 1 : -1);
     }, { passive: true });
 
-    let lastDayISO = localISO(new Date());
+    let lastDayISO = localISO(todayInTZ());
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) return;
-      const curISO = localISO(new Date());
+      const curISO = localISO(todayInTZ());
       if (curISO !== lastDayISO) {
         lastDayISO = curISO;
-        viewDate = new Date();
-        selectedDate = new Date();
+        viewDate = todayInTZ();
+        selectedDate = todayInTZ();
         upCache = null;
       }
       renderedTabs.clear();
